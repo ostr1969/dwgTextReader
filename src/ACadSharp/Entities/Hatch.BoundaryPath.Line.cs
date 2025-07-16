@@ -37,7 +37,9 @@ namespace ACadSharp.Entities
 				/// <inheritdoc/>
 				public override BoundingBox GetBoundingBox()
 				{
-					return BoundingBox.FromPoints([(XYZ)this.Start, (XYZ)this.End]);
+
+					System.Collections.Generic.IEnumerable<XYZ> collection = new[] { (XYZ)this.Start, (XYZ)this.End };
+					return BoundingBox.FromPoints(collection);
 				}
 			}
 		}

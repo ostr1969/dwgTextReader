@@ -5,10 +5,11 @@ using System;
 using System.Linq;
 
 namespace ACadSharp.Examples
-{
+{ 
 	class Program
 	{
-		const string _file = "../../../../../samples/sample_AC1032.dwg";
+		// const string _file = "../../../../../samples/sample_AC1032.dwg";
+		const string _file = "../../../../../samples/1.dwg";
 
 		static void Main(string[] args)
 		{
@@ -51,6 +52,25 @@ namespace ACadSharp.Examples
 			exploreTable(doc.UCSs);
 			exploreTable(doc.Views);
 			exploreTable(doc.VPorts);
+			Console.WriteLine("TEXTS:");
+			foreach (var o in doc.Entities)
+			{
+				if (o is ACadSharp.Entities.TextEntity)
+				{var g= (ACadSharp.Entities.TextEntity)o;
+					Console.WriteLine(g.Value);
+				}
+					
+			};
+			Console.WriteLine("MTEXTS:");
+			foreach (var o in doc.Entities)
+			{
+				if (o is ACadSharp.Entities.MText)
+				{
+					var g = (ACadSharp.Entities.MText)o;
+					Console.WriteLine(g.Value);
+				}
+
+			};
 		}
 
 		static void exploreTable<T>(Table<T> table)

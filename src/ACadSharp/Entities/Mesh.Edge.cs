@@ -28,6 +28,7 @@
 			{
 				this.Start = start;
 				this.End = end;
+				Crease = null;
 			}
 
 			public override string ToString()
