@@ -2,14 +2,16 @@
 using ACadSharp.Tables;
 using ACadSharp.Tables.Collections;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace ACadSharp.Examples
 { 
 	class Program
 	{
 		// const string _file = "../../../../../samples/sample_AC1032.dwg";
-		const string _file = "../../../../../samples/1.dwg";
+		const string _file = "../../../../../samples/b1.dwg";
 
 		static void Main(string[] args)
 		{
@@ -20,16 +22,21 @@ namespace ACadSharp.Examples
 				doc = reader.Read();
 				preview = reader.ReadPreview();
 			}
-
-			exploreDocument(doc);
+			List<string> fontlist=new List<string>();
+			ExploreDocument(doc,fontlist);
+			List<string> uniqueFontList = fontlist.Select(o=>o).Distinct().ToList();
+			Console.WriteLine("FONTS:");
+			foreach (var f in uniqueFontList)
+				Console.WriteLine($"\t{f}");
 		}
 
 		/// <summary>
 		/// Logs in the console the document information
 		/// </summary>
 		/// <param name="doc"></param>
-		static void exploreDocument(CadDocument doc)
+		static void ExploreDocument(CadDocument doc,List<string> fontlist)
 		{
+			Console.OutputEncoding = Encoding.GetEncoding("Windows-1255");
 			Console.WriteLine();
 			Console.WriteLine("SUMMARY INFO:");
 			Console.WriteLine($"\tTitle: {doc.SummaryInfo.Title}");
@@ -42,45 +49,69 @@ namespace ACadSharp.Examples
 			Console.WriteLine($"\tHyperlinkBase: {doc.SummaryInfo.HyperlinkBase}");
 			Console.WriteLine($"\tCreatedDate: {doc.SummaryInfo.CreatedDate}");
 			Console.WriteLine($"\tModifiedDate: {doc.SummaryInfo.ModifiedDate}");
-
-			exploreTable(doc.AppIds);
-			exploreTable(doc.BlockRecords);
-			exploreTable(doc.DimensionStyles);
-			exploreTable(doc.Layers);
-			exploreTable(doc.LineTypes);
-			exploreTable(doc.TextStyles);
-			exploreTable(doc.UCSs);
-			exploreTable(doc.Views);
-			exploreTable(doc.VPorts);
+			
+			ExploreTable(doc.AppIds,fontlist);
+			ExploreTable(doc.BlockRecords,fontlist);
+			ExploreTable(doc.DimensionStyles, fontlist);
+			ExploreTable(doc.Layers, fontlist);
+			ExploreTable(doc.LineTypes,fontlist);
+			ExploreTable(doc.TextStyles, fontlist);
+			ExploreTable(doc.UCSs, fontlist);
+			ExploreTable(doc.Views, fontlist);
+			ExploreTable(doc.VPorts, fontlist);
 			Console.WriteLine("TEXTS:");
 			foreach (var o in doc.Entities)
 			{
-				if (o is ACadSharp.Entities.TextEntity)
-				{var g= (ACadSharp.Entities.TextEntity)o;
-					Console.WriteLine(g.Value);
+				if (o is ACadSharp.Entities.TextEntity ot)
+				{
+					
+					Console.WriteLine($"textentity({ot.Style.Name}): {ot.Value}");
+					
+
 				}
 					
 			};
 			Console.WriteLine("MTEXTS:");
 			foreach (var o in doc.Entities)
 			{
-				if (o is ACadSharp.Entities.MText)
+				if (o is ACadSharp.Entities.MText om)
 				{
-					var g = (ACadSharp.Entities.MText)o;
-					Console.WriteLine(g.Value);
+					
+					Console.WriteLine(om.Value);
 				}
 
 			};
 		}
-
-		static void exploreTable<T>(Table<T> table)
+		
+		static void ExploreTable<T>(Table<T> table,List<string>  fontlist)
 			where T : TableEntry
 		{
 			Console.WriteLine($"{table.ObjectName}");
 			foreach (var item in table)
 			{
 				Console.WriteLine($"\tName: {item.Name}");
-
+				if(item is BlockRecord blk)
+				{ foreach (var o in blk.Entities)
+					{
+						if (o is ACadSharp.Entities.MText om)
+						{
+							Console.WriteLine($"\t\tmtext: {om.Value}");
+							fontlist.Add(om.Style.Name);
+						}
+						
+						if (o is ACadSharp.Entities.AttributeDefinition oa)
+						{
+							Console.WriteLine($"\t\tatt({oa.Style.Name}): {oa.Prompt}={oa.Value}");
+							fontlist.Add(oa.Style.Name);
+							continue;
+						}
+						if (o is ACadSharp.Entities.TextEntity ot)
+						{
+							Console.WriteLine($"\t\ttext({ot.Style}): {ot.Value}");
+							fontlist.Add(ot.Style.Name);
+						}
+					} 
+				}
 				if (item.Name == BlockRecord.ModelSpaceName && item is BlockRecord model)
 				{
 					Console.WriteLine($"\t\tEntities in the model:");
