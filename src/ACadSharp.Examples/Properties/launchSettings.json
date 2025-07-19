@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "folder": {
+      "commandName": "Project",
+      "commandLineArgs": "\r\n-D C:\\Users\\barako\\source\\repos\\ACadSharp\\samples -b"
+    },
+    "file": {
+      "commandName": "Project",
+      "commandLineArgs": " -v -s  -t  -b "
+    },
+    "none": {
+      "commandName": "Project",
+      "commandLineArgs": " -h"
+    }
+  }
+}

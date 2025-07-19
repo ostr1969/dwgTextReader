@@ -58,7 +58,9 @@ namespace ACadSharp.IO.DWG.DwgStreamReaders
 			}
 
 			byte[] header = null;
-			Debug.Assert(this._previewAddress + 39 == headerDataStart);
+			if(this._previewAddress + 39 != headerDataStart)
+				return new DwgPreview(previewCode, header, null);
+			//Debug.Assert(this._previewAddress + 39 == headerDataStart);
 			header = this._reader.ReadBytes((int)headerDataSize.Value);
 
 			byte[] body = null;
