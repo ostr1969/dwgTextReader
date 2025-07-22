@@ -13,6 +13,9 @@ using Utils = DwgCrawler.Utils;
 using System.Windows.Forms;
 using ACadSharp.Entities;
 using ACadSharp;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+
 
 
 namespace DwgCrawler
@@ -24,6 +27,7 @@ namespace DwgCrawler
 		const string FontPath = @"C:\Program Files\Autodesk\DWG TrueView 2026 - English\Fonts";
 		public List<string> frog_styles, rev_styles, encode_styles;
 		public CadDocument doc;
+		public DwgEsStorage esStorage = new DwgEsStorage();
 		public  void WriteDwg(string file)
 		{
 			using (DwgWriter writer = new DwgWriter(file, doc))
@@ -84,6 +88,7 @@ namespace DwgCrawler
 				Console.WriteLine($"\tHyperlinkBase: {doc.SummaryInfo.HyperlinkBase}");
 				Console.WriteLine($"\tCreatedDate: {doc.SummaryInfo.CreatedDate}");
 				Console.WriteLine($"\tModifiedDate: {doc.SummaryInfo.ModifiedDate}");
+				esStorage.summaryInfo = doc.SummaryInfo;
 				foreach (var item in doc.BlockRecords)
 				{
 
@@ -105,15 +110,17 @@ namespace DwgCrawler
 			ExploreTable(doc.AppIds, arguments.appid);
 			ExploreTable(doc.BlockRecords, arguments.blockrecords);
 			ExploreTable(doc.DimensionStyles, arguments.dimstyles);
-			ExploreTable(doc.Layers, arguments.layers);
+			ExploreTable(doc.Layers, arguments.layers);esStorage.layers = doc.Layers;
 			ExploreTable(doc.LineTypes, arguments.linetypes);
-			ExploreTable(doc.TextStyles, arguments.textstyles);
+			ExploreTable(doc.TextStyles, arguments.textstyles);esStorage.textStyles = doc.TextStyles;
 			ExploreTable(doc.UCSs, arguments.ucs);
 			ExploreTable(doc.Views, arguments.views);
 			ExploreTable(doc.VPorts, arguments.vports);
 			if (arguments.content)
 			{
 				string lay, tval,style;
+				
+				esStorage.Content = new JsonArray();
 				Console.WriteLine("Content:");				
 					 ExploreEntities(doc.Entities,"");
 
@@ -172,7 +179,13 @@ namespace DwgCrawler
 					//tval = txtdecode(om);
 					lay = om.Layer.Name;
 					Console.WriteLine($"{id++}{pre}mtext({style}): {tval}");
-					//fontlist.Add(om.Style.Name);
+					esStorage.Content.Add(new JsonObject
+					{
+						["type"] = "mtext",
+						["style"] = style,
+						["value"] = tval,
+						["layer"] = lay
+					});
 				}
 
 				if (o is ACadSharp.Entities.AttributeDefinition oa)
@@ -194,7 +207,14 @@ namespace DwgCrawler
 
 					lay = oa.Layer.Name;
 					Console.WriteLine($"{id++}{pre}att({style}): {prompt}={tval}");
-					//fontlist.Add(oa.Style.Name);
+					esStorage.Content.Add(new JsonObject
+					{
+						["type"] = "att",
+						["style"] = style,
+						["value"] = tval,
+						["prompt"] = prompt,
+						["layer"] = lay
+					});
 					continue;
 				}
 				if (o is ACadSharp.Entities.TextEntity ot)
@@ -211,7 +231,13 @@ namespace DwgCrawler
 					lay = ot.Layer.Name;
 
 					Console.WriteLine($"{id++}{pre}text({style}): {tval}");
-					//fontlist.Add(ot.Style.Name);
+					esStorage.Content.Add(new JsonObject
+					{
+						["type"] = "text",
+						["style"] = style,
+						["value"] = tval,
+						["layer"] = lay
+					});
 				}
 				if (o is ACadSharp.Entities.Insert oi)
 				{

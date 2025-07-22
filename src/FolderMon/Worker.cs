@@ -16,6 +16,9 @@ namespace FolderMon
 
 		protected override Task ExecuteAsync(CancellationToken stoppingToken)
 		{
+			string pathToWatch = Environment.GetEnvironmentVariable("DWDCRAWLER_FOLDER")
+							 ?? @"C:\install\Pdfs";
+
 			_fileMonitorService.StartMonitoring(@"C:\install\Pdfs");
 
 			// Keep running until cancellation requested
