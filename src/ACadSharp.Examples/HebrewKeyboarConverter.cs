@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ACadSharp.Examples
+namespace DwgCrawler
 {
 	public class HebrewKeyboardConverter
 	{

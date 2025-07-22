@@ -1,7 +1,7 @@
 ﻿using ACadSharp.IO;
 using System;
 
-namespace ACadSharp.Examples.Common
+namespace DwgCrawler.Common
 {
 	public class NotificationHelper
 	{

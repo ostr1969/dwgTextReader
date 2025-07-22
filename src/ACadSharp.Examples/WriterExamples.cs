@@ -1,7 +1,8 @@
-﻿using ACadSharp.Examples.Common;
+﻿using DwgCrawler.Common;
 using ACadSharp.IO;
+using ACadSharp;
 
-namespace ACadSharp.Examples
+namespace DwgCrawler
 {
 	public static class WriterExamples
 	{

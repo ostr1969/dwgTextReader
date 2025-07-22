@@ -1,8 +1,9 @@
-﻿using ACadSharp.Entities;
+﻿using ACadSharp;
+using ACadSharp.Entities;
 using CSMath;
 using System.Collections.Generic;
 
-namespace ACadSharp.Examples.Entities
+namespace DwgCrawler.Entities
 {
 	public static class LineExample
 	{

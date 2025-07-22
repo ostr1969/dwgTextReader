@@ -1,17 +1,21 @@
-﻿using ACadSharp.Examples.Common;
+﻿using DwgCrawler.Common;
 using ACadSharp.IO;
 using ACadSharp.Tables;
 using ACadSharp.Tables.Collections;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Utils = DwgCrawler.Utils;
 using System.Windows.Forms;
+using ACadSharp.Entities;
+using ACadSharp;
 
 
-namespace ACadSharp.Examples
+namespace DwgCrawler
 {
 	class DwgParser
 	{
@@ -58,7 +62,7 @@ namespace ACadSharp.Examples
 			//foreach (var f in uniqueFontList)
 			//	Console.WriteLine($"\t{f}");
 		}
-
+		Dictionary<string, bool> layersStatus = new Dictionary<string, bool>();
 		/// <summary>
 		/// Logs in the console the document information
 		/// </summary>
@@ -95,6 +99,9 @@ namespace ACadSharp.Examples
 				}
 			}
 			List<string> fontlist = new List<string>();
+			//var blocks= doc.BlockRecords.Select(o => o).ToList();
+			foreach (var l in doc.Layers)
+			{ layersStatus[l.Name] = l.IsOn; }
 			ExploreTable(doc.AppIds, arguments.appid);
 			ExploreTable(doc.BlockRecords, arguments.blockrecords);
 			ExploreTable(doc.DimensionStyles, arguments.dimstyles);
@@ -104,40 +111,12 @@ namespace ACadSharp.Examples
 			ExploreTable(doc.UCSs, arguments.ucs);
 			ExploreTable(doc.Views, arguments.views);
 			ExploreTable(doc.VPorts, arguments.vports);
-			if (arguments.texts)
+			if (arguments.content)
 			{
-				Console.WriteLine("TEXTS:");
-				foreach (var o in doc.Entities)
-				{
-					string style;
-					if (o is ACadSharp.Entities.TextEntity ot)
-					{
+				string lay, tval,style;
+				Console.WriteLine("Content:");				
+					 ExploreEntities(doc.Entities,"");
 
-						if (File.Exists(Path.Combine(FontPath, ot.Style.Name + ".shx")))
-							style = ot.Style.Name;
-						else
-						{
-							style = $"#{ot.Style.Name}#";
-						}
-
-						var tval = txtdecode(ot);
-						Console.WriteLine($"\ttextentity({style}): {tval}");
-
-
-					}
-					if (o is ACadSharp.Entities.MText om)
-					{
-						if (File.Exists(Path.Combine(FontPath, om.Style.Name + ".shx")))
-							style = om.Style.Name;
-						else
-						{
-							style = $"#{om.Style.Name}#";
-						}
-						var tval = txtdecode(om);
-						Console.WriteLine($"\tmtext({style}): {tval}");
-					}
-
-				}
 			}
 			
 			
@@ -150,137 +129,156 @@ namespace ACadSharp.Examples
 			if (!active)
 				return;
 			Console.WriteLine($"{table.ObjectName}");
-			string style;
+			string style,tval,lay;
+			//var a = table.Select(o => o).ToList();
 			foreach (var item in table)
 			{
-				if (item is BlockRecord )
-					Console.WriteLine($"\tBlock Name: {item.Name}");
-				else
-					Console.WriteLine($"\t Name: {item.Name}");
+				if (item is  not BlockRecord )				
+					Console.WriteLine($"\tName: {item.Name}");
 				if (item is BlockRecord blk)
+					{
+					Console.WriteLine($"Block Name: {item.Name}");
+					ExploreEntities(blk.Entities,""); }
+
+
+
+
+			}
+		}
+		int id = 0;
+		public void ExploreEntities(CadObjectCollection<Entity> collection,string pre)
+		{
+			pre=pre+"\t";
+			string style, tval, lay;
+			//Console.WriteLine($"\tBlock Name: {blk.Name}");
+			//var a = blk.Entities.Where(o => o.ObjectName == "TEXT").ToList();
+
+			foreach (var o in collection)
+			{
+
+				//if (layersStatus[o.Layer.Name] == false)
+				//	continue; //skip if layer is off
+
+				if (o is ACadSharp.Entities.MText om)
 				{
 					
-					Debug.Print(blk.BlockEntity.IsInvisible.ToString());
-					foreach (var o in blk.Entities)
+						tval = txtdecode(om,om.Value);
+					if (File.Exists(Path.Combine(FontPath, om.Style.Name + ".shx")))
+						style = om.Style.Name;
+					else
 					{
-						if (o is ACadSharp.Entities.MText om)
-						{
-
-							if (File.Exists(Path.Combine(FontPath, om.Style.Name + ".shx")))
-								style = om.Style.Name;
-							else
-							{
-								style = $"#{om.Style.Name}#";
-							}
-							var tval = txtdecode(om);
-							Console.WriteLine($"\t\tmtext({style}): {tval}");
-							//fontlist.Add(om.Style.Name);
-						}
-
-						if (o is ACadSharp.Entities.AttributeDefinition oa)
-						{
-
-							if (File.Exists(Path.Combine(FontPath, oa.Style.Name + ".shx")))
-								style = oa.Style.Name;
-							else
-							{
-								style = $"#{oa.Style.Name}#";
-							}
-							var tval = txtdecode(oa);
-							string prompt=oa.Prompt;
-							if (rev_styles.Contains(oa.Style.Name))
-								prompt = Rev(oa.Prompt);
-							
-
-
-								Console.WriteLine($"\t\tatt({style}): {prompt}={tval}");
-							//fontlist.Add(oa.Style.Name);
-							continue;
-						}
-						if (o is ACadSharp.Entities.TextEntity ot)
-						{
-							
-
-							var tval = txtdecode(ot);
-
-
-							if (File.Exists(Path.Combine(FontPath, ot.Style.Name + ".shx")))
-								style = ot.Style.Name;
-							else
-								style = $"#{ot.Style.Name}#";
-
-							Console.WriteLine($"\t\ttext({style}): {tval}");
-							//fontlist.Add(ot.Style.Name);
-						}
+						style = $"#{om.Style.Name}#";
 					}
+					//tval = txtdecode(om);
+					lay = om.Layer.Name;
+					Console.WriteLine($"{id++}{pre}mtext({style}): {tval}");
+					//fontlist.Add(om.Style.Name);
 				}
-				
+
+				if (o is ACadSharp.Entities.AttributeDefinition oa)
+				{
+					
+					
+						tval = txtdecode(oa,oa.Value);
+
+					if (File.Exists(Path.Combine(FontPath, oa.Style.Name + ".shx")))
+						style = oa.Style.Name;
+					else
+					{
+						style = $"#{oa.Style.Name}#";
+					}
+					//tval = txtdecode(oa);
+					string prompt = txtdecode(oa, oa.Prompt);
+					
 
 
+					lay = oa.Layer.Name;
+					Console.WriteLine($"{id++}{pre}att({style}): {prompt}={tval}");
+					//fontlist.Add(oa.Style.Name);
+					continue;
+				}
+				if (o is ACadSharp.Entities.TextEntity ot)
+				{
+
+					
+						tval = txtdecode(ot,ot.Value);
+
+
+					if (File.Exists(Path.Combine(FontPath, ot.Style.Name + ".shx")))
+						style = ot.Style.Name;
+					else
+						style = $"#{ot.Style.Name}#";
+					lay = ot.Layer.Name;
+
+					Console.WriteLine($"{id++}{pre}text({style}): {tval}");
+					//fontlist.Add(ot.Style.Name);
+				}
+				if (o is ACadSharp.Entities.Insert oi)
+				{
+					Console.WriteLine($"{id++}{pre}Block : {oi.Block.Name}");
+					ExploreEntities(oi.Block.Entities,pre);
+				}
 				
 			}
 		}
-		static string Rev(string input)
-		{
-			char[] chars = input.ToCharArray();
-			Array.Reverse(chars);
-			return new string(chars);
-		}
-		public string txtdecode(ACadSharp.Entities.TextEntity ot)
+		
+		public string txtdecode(ACadSharp.Entities.TextEntity ot,string txt)
 		{
 			string tval;
-			List<string> enc = new List<string> { "ibm862", "windows-1255", "iso-8859-8", "iso-8859-8", "windows-1252","cp862" };
+			
 
-			//if (ot.Style.Name == "HEB" && ot.Value!="")
+			//if (ot.Style.Name == "DCADTXTSTYLE9" && ot.Value!="")
 			//{
+				
 			//	foreach (var e in enc)
 			//	{
 			//		byte[] bytes = Encoding.GetEncoding(e).GetBytes(ot.Value);
-			//		string correctHebrew = Encoding.GetEncoding(enc[0]).GetString(bytes)+
-			//			Encoding.GetEncoding(enc[1]).GetString(bytes)+
-			//			Encoding.GetEncoding(enc[2]).GetString(bytes)+
-			//			Encoding.GetEncoding(enc[3]).GetString(bytes) + Encoding.GetEncoding(enc[4]).GetString(bytes)+ Encoding.GetEncoding(enc[5]).GetString(bytes);
+			//		string correctHebrew = Encoding.GetEncoding(enc[0]).GetString(bytes) +
+			//			Encoding.GetEncoding(enc[1]).GetString(bytes) +
+			//			Encoding.GetEncoding(enc[2]).GetString(bytes) +
+			//			Encoding.GetEncoding(enc[3]).GetString(bytes) + Encoding.GetEncoding(enc[4]).GetString(bytes) + Encoding.GetEncoding(enc[5]).GetString(bytes);
 			//	}
 			//}
+			
 
-
-			List<string> style2decode = encode_styles;
+			List<string> style2decode = encode_styles.Select(o=>o.ToLower()).ToList();
 			List<string> style2frog = frog_styles;
-			List<string> style2rev = rev_styles;
-			if (style2decode.Contains( ot.Style.Name) )
+			List<string> style2rev = rev_styles.Select(o => o.ToLower()).ToList();
+			if (style2decode.Contains( ot.Style.Name.ToLower()) )
 			{
-				byte[] bytes1 = Encoding.GetEncoding("windows-1255").GetBytes(ot.Value);
-				tval = Encoding.GetEncoding("ibm862").GetString(bytes1);
+				tval = Utils.GibrishIterator(txt);
+				
 			}
-			else if (style2frog.Contains(ot.Style.Name))
-				tval = HebrewKeyboardConverter.ConvertToHebrewKeyboard(ot.Value);
+			
 			else
-				tval = ot.Value;
+				tval = txt;
 
-			if (rev_styles.Contains(ot.Style.Name))
-				tval = Rev(tval);
+			if (style2rev.Contains(ot.Style.Name.ToLower()))
+				tval = Utils.Rev(tval);
 			return tval;
 		}
-		public string txtdecode(ACadSharp.Entities.MText ot)
+		public string txtdecode(ACadSharp.Entities.MText ot,string txt)
 		{
 			string tval;
-			List<string> style2decode = encode_styles;
+			List<string> style2decode = encode_styles.Select(o => o.ToLower()).ToList();
 			List<string> style2frog = frog_styles;
-			List<string> style2rev = rev_styles;
-			if (style2decode.Contains(ot.Style.Name))
+			List<string> style2rev = rev_styles.Select(o => o.ToLower()).ToList();
+			if (style2decode.Contains(ot.Style.Name.ToLower()))
 			{
-				byte[] bytes1 = Encoding.GetEncoding("windows-1255").GetBytes(ot.Value);
-				tval = Encoding.GetEncoding("ibm862").GetString(bytes1);
+				tval = Utils.GibrishIterator(txt);
+				
 			}
-			else if (style2frog.Contains(ot.Style.Name))
-				tval = HebrewKeyboardConverter.ConvertToHebrewKeyboard(ot.Value);
+			
 			else
-				tval = ot.Value;
+				tval = txt;
 
-			if (rev_styles.Contains(ot.Style.Name))
-				tval = Rev(tval);
+			if (style2rev.Contains(ot.Style.Name.ToLower()))
+				tval = Utils.Rev(tval);
 			return tval;
 		}
+	
+		
+		
 		static ArgStorage ArgParser(string[] args)
 		{
 			ArgStorage argStorage = new ArgStorage();
@@ -335,9 +333,9 @@ namespace ACadSharp.Examples
 					case "--vports":
 						argStorage.vports = true;
 						break;
-					case "-te":
-					case "--texts":
-						argStorage.texts = true;
+					case "-c":
+					case "--content":
+						argStorage.content = true;
 						break;
 					case "-D":
 					case "--dir":
@@ -351,7 +349,7 @@ namespace ACadSharp.Examples
 						break;
 					case "-h":
 					case "--help":
-						Console.WriteLine("Usage: ACadSharp.Examples [-f|--file file] [-D|--dir folder] [-s|--summary] [-a|--appid] [-b|--blocks] [-di|--dimstyles]" +
+						Console.WriteLine("Usage: DwgCrawler [-f|--file file] [-D|--dir folder] [-s|--summary] [-a|--appid] [-b|--blocks] [-di|--dimstyles]" +
 							" [-v|--verbose] [-te|--texts] [-u|--ucs] [-vp|--vports] [-t|--textstyles] [-li|--linetypes] [-la|--layers]");
 						Environment.Exit(1);
 						break;
@@ -397,7 +395,7 @@ namespace ACadSharp.Examples
 		}
 		public class ArgStorage { public string File ; public bool verbose; public string[] DwgFiles; public bool summary;
 			public bool appid; public bool blockrecords; public bool dimstyles; public bool layers; public bool linetypes;
-			public bool textstyles; public bool ucs; public bool views; public bool vports; public bool texts; public string folder;
+			public bool textstyles; public bool ucs; public bool views; public bool vports; public bool content; public string folder;
 		};
 	}
 	

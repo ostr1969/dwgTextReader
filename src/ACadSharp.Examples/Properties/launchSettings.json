@@ -6,7 +6,7 @@
     },
     "file": {
       "commandName": "Project",
-      "commandLineArgs": " -v -s  -t  -b "
+      "commandLineArgs": " -v -s  -t  -c"
     },
     "none": {
       "commandName": "Project",

@@ -1,7 +1,8 @@
-﻿using ACadSharp.Entities;
+﻿using ACadSharp;
+using ACadSharp.Entities;
 using ACadSharp.Tables;
 
-namespace ACadSharp.Examples.Entities
+namespace DwgCrawler.Entities
 {
 	public static class InsertExamples
 	{

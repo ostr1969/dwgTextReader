@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ACadSharp.Examples
+namespace DwgCrawler
 {
 	internal class Program
 	{
@@ -12,7 +12,7 @@ namespace ACadSharp.Examples
 		static void Main(string[] args)
 		{
 			var p =new DwgParser(args);
-			p.WriteDwg("output.dwg");
+			//p.WriteDwg("output.dwg");
 		}
 	}
 }

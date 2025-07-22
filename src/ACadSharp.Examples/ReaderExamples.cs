@@ -1,9 +1,10 @@
 ﻿using ACadSharp.Entities;
-using ACadSharp.Examples.Common;
+using DwgCrawler.Common;
 using ACadSharp.IO;
 using System.Collections.Generic;
+using ACadSharp;
 
-namespace ACadSharp.Examples
+namespace DwgCrawler
 {
 	public static class ReaderExamples
 	{
