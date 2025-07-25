@@ -6,6 +6,9 @@
         xmlns:local="clr-namespace:ArchitectIndexer"
         mc:Ignorable="d"
         Title="PlanFind" Height="450" Width="800">
+    <Window.DataContext>
+        <local:MainVM/>
+    </Window.DataContext>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="100" />
@@ -17,8 +20,8 @@
                     HorizontalAlignment="Center" 
                     VerticalAlignment="Top" 
                     Margin="10">
-            <Image Source="pack://application:,,,/Resources/PlanFind.png" 
-    HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,0,0" Width="200" Height="90"/>
+            <Image Source="/Resources/PlanFind.png"
+    VerticalAlignment="Top" Margin="0,0,0,0" Width="200" Height="90" HorizontalAlignment="Left"/>
             <StackPanel>
                 <TextBlock Text="Welcome to PlanFind!" 
     FontSize="24" 
@@ -34,12 +37,13 @@
             </StackPanel>
         </StackPanel>
 
-        <StackPanel Orientation="Horizontal" Grid.Row="1" Height="30">
-            <TextBlock Text="Please select a directory to start indexing." 
+        <StackPanel Orientation="Horizontal" Grid.Row="1" Height="30" HorizontalAlignment="Stretch">
+            <Button Content="Select Directory"  Width="100" Margin="20,0,20,0"/>
+            <TextBox Text="Select a directory to start indexing..." 
                    HorizontalAlignment="Center" VerticalAlignment="Center"
                    
-                   Margin="0,0,0,0"/>
-            <Button Content="Select Directory"  Width="100"/>
+                   Margin="0,0,0,0" Width="400"/>
+            <Button Content="StartIndexing"  Width="100"  Margin="20,0,20,0"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Center">
         <TextBox Text="Search Here..." Height="30" Width="500"/>

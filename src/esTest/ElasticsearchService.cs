@@ -41,11 +41,13 @@ namespace esTest
 
 		public async Task IndexArticleAsync(DwgData article)
 		{
+			
 			var response = await client.IndexDocumentAsync(article);
 			if (!response.IsValid)
 			{
 				throw new Exception(response.OriginalException.Message);
 			}
+			Console.WriteLine($"Indexed: {article.file}");
 		}
 
 		public async Task<ISearchResponse<DwgData>> SearchArticlesAsync(string keyword)
@@ -64,11 +66,26 @@ namespace esTest
 // Note: The 'content' field is an array, so it will return all matching elements
 );
 
-
-
-
-
 			return searchResponse;
+		}
+		public  bool FileExists(string filename)
+		{
+			var searchResponse = client.Search<DwgData>(s => s
+	.Query(q => q
+		.Match(m => m
+			.Field("file")
+			.Query(filename) // Text to search for within the array elements
+		)
+	)
+// Include only the 'content', 'file',  fields in the response
+// Adjust the fields as necessary based on your requirements
+// Note: The 'content' field is an array, so it will return all matching elements
+);
+			if (searchResponse.IsValid && searchResponse.Documents.Any())
+			{
+				return true;
+			}
+			return false;
 		}
 
 

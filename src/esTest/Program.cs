@@ -11,17 +11,21 @@ internal class Program
 	static async Task Main(string[] args)
 	{
 		string rootPath = @"C:\Users\barako\source\repos\ACadSharp\samples";
-		string extension = "*._dwg";
+		string extension = "*.dwg";
 		string[] files = Directory.GetFiles(rootPath, extension, SearchOption.AllDirectories);
 		var es = new ElasticsearchService(uri: "http://localhost:9200", indexName: "dwg");
 		foreach (var file in files)
 		{
-
+			if (es.FileExists(file))
+			{
+				Console.WriteLine($"File already indexed: {file}");
+				continue;
+			}
 			var dwg=fileToDwgdata(file);
 			try
 			{
 				await es.IndexArticleAsync(dwg);
-				Console.WriteLine($"Indexed: {file}");
+				
 			}
 			catch (Exception ex)
 			{
