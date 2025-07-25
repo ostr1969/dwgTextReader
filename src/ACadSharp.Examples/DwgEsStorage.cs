@@ -13,9 +13,9 @@ namespace DwgCrawler
 	{
 		public CadSummaryInfo summaryInfo;
 		//public DimensionStylesTable dimensionStyles;
-		public LayersTable layers;
+		public List<string> layers=new();
 		//public LinetypesTable linetypes;
-		public TextStylesTable textStyles;
+		public List<string> textStyles=new();
 		//public ViewportsTable viewports;
 		//public BlockRecordsTable blockRecords;
 		public Dictionary<string, string> customProperties;

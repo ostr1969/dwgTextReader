@@ -11,6 +11,10 @@
     "none": {
       "commandName": "Project",
       "commandLineArgs": " -h"
+    },
+    "json": {
+      "commandName": "Project",
+      "commandLineArgs": " -j -f \"C:\\Users\\barako\\source\\repos\\ACadSharp\\samples\\1.dwg\""
     }
   }
 }

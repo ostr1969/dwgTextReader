@@ -1,0 +1,50 @@
+﻿<Window x:Class="ArchitectIndexer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ArchitectIndexer"
+        mc:Ignorable="d"
+        Title="PlanFind" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="100" />
+            <RowDefinition Height="40" />
+            <RowDefinition Height="60" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal"  Grid.Row="0"
+                    HorizontalAlignment="Center" 
+                    VerticalAlignment="Top" 
+                    Margin="10">
+            <Image Source="pack://application:,,,/Resources/PlanFind.png" 
+    HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,0,0" Width="200" Height="90"/>
+            <StackPanel>
+                <TextBlock Text="Welcome to PlanFind!" 
+    FontSize="24" 
+    FontWeight="Bold" 
+    HorizontalAlignment="Center" 
+    VerticalAlignment="Top" 
+    Margin="0,0,0,0"/>
+                <TextBlock Text="PlanFind - Architectural Plan Indexer" 
+                       FontSize="20" 
+                       FontWeight="Bold"/>
+
+               
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="1" Height="30">
+            <TextBlock Text="Please select a directory to start indexing." 
+                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                   
+                   Margin="0,0,0,0"/>
+            <Button Content="Select Directory"  Width="100"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Center">
+        <TextBox Text="Search Here..." Height="30" Width="500"/>
+            <Button Content="Search" Height="30" Width="80"/>
+        </StackPanel>    
+
+    </Grid>
+</Window>

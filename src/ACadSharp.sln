@@ -50,6 +50,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".config", ".config", "{003A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FolderMon", "FolderMon\FolderMon.csproj", "{36B2C58C-49CD-491D-802C-6FFE9EDA30C0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "esTest", "esTest\esTest.csproj", "{37279E85-16D4-4967-837B-04EA2F67A098}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArchitectIndexer", "ArchitectIndexer\ArchitectIndexer.csproj", "{C8AD0900-2F42-4B7D-B539-BADDAE109646}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +85,18 @@ Global
 		{36B2C58C-49CD-491D-802C-6FFE9EDA30C0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{36B2C58C-49CD-491D-802C-6FFE9EDA30C0}.Test|Any CPU.ActiveCfg = Test|Any CPU
 		{36B2C58C-49CD-491D-802C-6FFE9EDA30C0}.Test|Any CPU.Build.0 = Test|Any CPU
+		{37279E85-16D4-4967-837B-04EA2F67A098}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37279E85-16D4-4967-837B-04EA2F67A098}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37279E85-16D4-4967-837B-04EA2F67A098}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37279E85-16D4-4967-837B-04EA2F67A098}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37279E85-16D4-4967-837B-04EA2F67A098}.Test|Any CPU.ActiveCfg = Test|Any CPU
+		{37279E85-16D4-4967-837B-04EA2F67A098}.Test|Any CPU.Build.0 = Test|Any CPU
+		{C8AD0900-2F42-4B7D-B539-BADDAE109646}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8AD0900-2F42-4B7D-B539-BADDAE109646}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8AD0900-2F42-4B7D-B539-BADDAE109646}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8AD0900-2F42-4B7D-B539-BADDAE109646}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8AD0900-2F42-4B7D-B539-BADDAE109646}.Test|Any CPU.ActiveCfg = Test|Any CPU
+		{C8AD0900-2F42-4B7D-B539-BADDAE109646}.Test|Any CPU.Build.0 = Test|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
