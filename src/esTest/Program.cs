@@ -42,31 +42,14 @@ internal class Program
 	}
 	static DwgData fileToDwgdata(string path)
 	{
-		// 1. Run the external executable and capture the JSON output
-		var args=new DwgCrawler.Utils.ArgStorage { File = path, json = true, summary = false, appid = false,
-			blockrecords = false, dimstyles = false, layers = false, linetypes = false, textstyles = false, ucs = false, views = false, vports = false
-		};
+		
 
-	
-		var p = new DwgParser(args);
-		var jsonOutput=p.esStorage.ToLowercaseKeys();
+
+		var p = DwgParser.JsonFromDwg(path);
+		var jsonOutput=p.esStorage;
 		var dwg=DwgData.FromJObject(jsonOutput);
 		return dwg;
-		// 2. Send the JSON in a PUT request
-		//using (var client = new HttpClient())
-		//{
-		//	var content = new StringContent(jsonOutput, Encoding.UTF8, "application/json");
-
-		//	// Replace with your actual URL
-		//	string url = "http://localhost:9200/dwg/_doc";
-		//	Console.WriteLine(jsonOutput);
-		//	HttpResponseMessage response = await client.PostAsync(url, content);
-		//	string responseContent = await response.Content.ReadAsStringAsync();
-
-		//	Console.WriteLine($"Status: {response.StatusCode}");
-		//	Console.WriteLine("Response:");
-		//	Console.WriteLine(responseContent);
-		//}
+		
 	}
 	
 }

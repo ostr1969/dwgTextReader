@@ -40,6 +40,28 @@ namespace DwgCrawler
 				writer.Write();
 			}
 		}
+		public static DwgParser JsonFromDwg(string path) //entry for json only
+		{
+			var args = new DwgCrawler.Utils.ArgStorage
+			{
+				File = path,
+				json = true,
+				summary = false,
+				appid = false,
+				blockrecords = false,
+				dimstyles = false,
+				layers = false,
+				linetypes = false,
+				textstyles = false,
+				ucs = false,
+				views = false,
+				vports = false
+			};
+
+
+			var p = new DwgParser(args);
+			return p;
+		}
 		public  DwgParser(Utils.ArgStorage arguments)
 		{
 			//var arguments = ArgParser(args);
@@ -138,6 +160,7 @@ namespace DwgCrawler
 			else
 				ExploreEntities(doc.Entities, "", false);
 			esStorage["content"] = esStorageContent;
+			esStorage=esStorage.ToLowercaseKeys();
 
 
 		}
