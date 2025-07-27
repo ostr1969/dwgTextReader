@@ -56,7 +56,9 @@
             </StackPanel>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Center" Margin="0,20,0,0">
-        <TextBox  Height="30" Width="500" Text="{Binding Query }" KeyDown="TextBox_KeyDown"/>
+            <RadioButton Content="dwg" GroupName="radio" IsChecked="{Binding Dwgsearch}" VerticalAlignment="Center" Margin="5"/>
+            <RadioButton Content="pdf" GroupName="radio"  VerticalAlignment="Center" Margin="5"/>
+            <TextBox  Height="30" Width="500" Text="{Binding Query }" KeyDown="TextBox_KeyDown"/>
             <Button Content="Search" Height="30" Width="80" Command="{Binding _search}"/>
         </StackPanel>
         <ListBox ItemsSource="{Binding SearchResults }" 

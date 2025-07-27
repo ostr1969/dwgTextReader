@@ -6,11 +6,12 @@ namespace ArchitectIndexer
 {
 	class PdfParser
 	{
+		public JObject PdfData { get; private set; }
 		public PdfParser(string pdfPath)
 		{
 			// pdfPath = @"yourfile.pdf"; // Replace with your file path
 
-			JObject pdfData = ReadPdfToJObject(pdfPath);
+			 PdfData = ReadPdfToJObject(pdfPath);
 
 			//Console.WriteLine(pdfData.ToString());
 		}
@@ -25,14 +26,14 @@ namespace ArchitectIndexer
 			{
 				// Metadata
 				var info = document.Information;
-				metadata["Title"] = info.Title ?? "";
-				metadata["Author"] = info.Author ?? "";
-				metadata["Subject"] = info.Subject ?? "";
-				metadata["Keywords"] = info.Keywords ?? "";
-				metadata["Creator"] = info.Creator ?? "";
-				metadata["Producer"] = info.Producer ?? "";
-				metadata["CreationDate"] = info.CreationDate ?? "";
-				metadata["ModificationDate"] = info.ModifiedDate ?? "";
+				metadata["title"] = info.Title ?? "";
+				metadata["author"] = info.Author ?? "";
+				metadata["subject"] = info.Subject ?? "";
+				metadata["keywords"] = info.Keywords ?? "";
+				metadata["creator"] = info.Creator ?? "";
+				metadata["producer"] = info.Producer ?? "";
+				metadata["creationDate"] = info.CreationDate ?? "";
+				metadata["modificationDate"] = info.ModifiedDate ?? "";
 
 				// Content
 				foreach (var page in document.GetPages())
@@ -41,8 +42,8 @@ namespace ArchitectIndexer
 				}
 			}
 
-			result["Metadata"] = metadata;
-			result["Content"] = content;
+			result["metadata"] = metadata;
+			result["content"] = content;
 
 			return result;
 		}

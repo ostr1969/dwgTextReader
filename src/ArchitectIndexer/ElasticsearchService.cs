@@ -14,7 +14,7 @@ namespace ArchitectIndexer
 {
 	public class ElasticsearchService
 	{
-		private ElasticClient client;
+		public ElasticClient client;
 		private string _dwg_indexName;
 
 		//public  ElasticsearchService(string uri, string indexName)
@@ -44,7 +44,11 @@ namespace ArchitectIndexer
 
 				if (!existsResponse.Exists)
 				{
-					await client.Indices.CreateAsync(pdf_indexname);
+					await client.Indices.CreateAsync(pdf_indexname, c => c
+						.Map(m => m
+						.Dynamic(true)  // Allows dynamic fields
+						.AutoMap()
+						));
 				}
 			}
 			//using var cts2 = new CancellationTokenSource(TimeSpan.FromSeconds(2));
@@ -52,7 +56,11 @@ namespace ArchitectIndexer
 
 				if (!existsResponse.Exists)
 				{
-					await client.Indices.CreateAsync(dwg_indexname);
+					await client.Indices.CreateAsync(dwg_indexname, c => c
+					.Map(m => m
+						.Dynamic(true)  // Allows dynamic fields
+						.AutoMap()
+					));
 				}
 			}
 
@@ -69,20 +77,20 @@ namespace ArchitectIndexer
 			return response.Count;
 
 		}
-		private async Task ensureIndexExists()
-		{
-			//var a = client.Indices.ExistsAsync(_indexName);
-			//await Task.Delay(1000);
-			var exists =await client.Indices.ExistsAsync(_dwg_indexName);
+		//private async Task ensureIndexExists()
+		//{
+		//	//var a = client.Indices.ExistsAsync(_indexName);
+		//	//await Task.Delay(1000);
+		//	var exists =await client.Indices.ExistsAsync(_dwg_indexName);
 			
-			if (!exists.Exists)
-			{
-				await client.Indices.CreateAsync(_dwg_indexName, c => c
-					.Map<Text>(m => m.AutoMap())
-				);
-			}
-			exists = await client.Indices.ExistsAsync(_dwg_indexName);
-		}
+		//	if (!exists.Exists)
+		//	{
+		//		await client.Indices.CreateAsync(_dwg_indexName, c => c
+		//			.Map<Text>(m => m.AutoMap())
+		//		);
+		//	}
+		//	exists = await client.Indices.ExistsAsync(_dwg_indexName);
+		//}
 
 		public async Task IndexArticleAsync(DwgData article)
 		{
@@ -95,23 +103,24 @@ namespace ArchitectIndexer
 			Console.WriteLine($"Indexed: {article.file}");
 		}
 
-		public async Task<ISearchResponse<DwgData>> SearchArticlesAsync(string keyword)
+		public async Task<ISearchResponse<object>> SearchArticlesAsync(string keyword,string index)
 		{
-			var searchResponse = client.Search<DwgData>(s => s.Index("dwg")
+			var searchResponse = client.Search<object>(s => s.Index(index)
 	.Query(q => q
 		.MultiMatch(m => m
 		.Query(keyword) // Text to search for within the array elements
 			.Fields(f=>f
-			.Field("content.value").Field("file")
-			
-		))
-	).Highlight(k=> k.PreTags("<mark>").PostTags("</mark>")
+			.Field("content.value").Field("file").Field("content")
+
+		)))
+	.Highlight(k=> k.PreTags("<mark>").PostTags("</mark>")
 		.Fields(
 			hf => hf.Field("file"),
-			hf => hf.Field("content.value")
+			hf => hf.Field("content.value"),
+			hf => hf.Field("content")
 		))
 		.Size(100) // Limit the number of results returned
-		.Source(src => src.Includes(i => i.Field("content.value").Field("file").Field("id")))
+		.Source(src => src.Includes(i => i.Field("content.value").Field("file").Field("id").Field("content")))
 // Include only the 'content', 'file',  fields in the response
 // Adjust the fields as necessary based on your requirements
 // Note: The 'content' field is an array, so it will return all matching elements
@@ -121,19 +130,14 @@ namespace ArchitectIndexer
 		}
 		public  async Task<bool> FileExists(string filename)
 		{
-			var searchResponse =await  client.SearchAsync<DwgData>(s => s
-	.Query(q => q
-		.Term(t => t
-				.Field(f => f.file)       // Use the exact field (usually keyword type)
-				.Value(filename)      // Must match exactly
-			)
-		)
-	
-
-// Include only the 'content', 'file',  fields in the response
-// Adjust the fields as necessary based on your requirements
-// Note: The 'content' field is an array, so it will return all matching elements
-);
+			var searchResponse =await  client.SearchAsync<object>(s => s.Index("dwg")
+			.Query(q => q
+				.Term(t => t
+						.Field( "file.keyword")       // Use the exact field (usually keyword type)
+						.Value(filename)      // Must match exactly
+					)
+				)			
+			);
 			if (searchResponse.IsValid && searchResponse.Documents.Any())
 			{
 				return true;

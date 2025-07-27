@@ -1,5 +1,7 @@
 ﻿using DwgCrawler;
+using Elasticsearch.Net;
 using Microsoft.Web.WebView2.WinForms;
+using Newtonsoft.Json.Linq;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
@@ -92,7 +94,8 @@ namespace ArchitectIndexer
 		public async Task Search()
 		{
 			_ensureIndexExistsTask.Wait();
-			var results = await es.SearchArticlesAsync(Query);
+			string ind = Dwgsearch ? "dwg" : "pdf";
+			var results = await es.SearchArticlesAsync(Query,ind);
 			SearchResults.Clear();
 			string HtmlContent = "";
 			foreach (var hit in results.Hits)
@@ -122,13 +125,13 @@ namespace ArchitectIndexer
 		public async Task StartIndexing()
 		{
 			_ensureIndexExistsTask.Wait();
-			if (string.IsNullOrEmpty(folder))
+			if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder))
 			{
-				MessageBox.Show("Please select a folder to index.");
+				MessageBox.Show("Folder empty or not Exists");
 				return;
 			}
 			string rootPath = folder;
-			var extensions = new[] { ".dwg" };
+			var extensions = new[] { ".dwg",".pdf"};
 			//string[] files = Directory.GetFiles(rootPath, extensions, SearchOption.AllDirectories);
 			var files = Directory
 				.GetFiles(folder)
@@ -147,6 +150,12 @@ namespace ArchitectIndexer
 				if (fileObj.Extension==".pdf")
 				{
 					var pdfParser = new PdfParser(file);
+
+
+					var response = await es.client.LowLevel.IndexAsync<StringResponse>(
+						"pdf",    // index name
+						PostData.String(pdfParser.PdfData.ToString()));
+
 					continue;
 				}
 				var dwg = fileToDwgdata(file);
@@ -195,6 +204,19 @@ namespace ArchitectIndexer
 			get { return _query; }
 			set { SetProperty(ref _query, value); }
 		}
-		
+
+		private bool _dwgsearch = true;
+		public bool Dwgsearch
+		{
+			get { return _dwgsearch; }
+			set { SetProperty(ref _dwgsearch, value); }
+		}
+		//private bool _pdfsearch = true;
+		//public bool Pdfsearch
+		//{
+		//	get { return _pdfsearch; }
+		//	set { SetProperty(ref _pdfsearch, value); }
+		//}
+
 	}
 }
