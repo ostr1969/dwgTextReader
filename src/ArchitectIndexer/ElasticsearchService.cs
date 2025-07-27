@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 
 
@@ -14,59 +15,79 @@ namespace ArchitectIndexer
 	public class ElasticsearchService
 	{
 		private ElasticClient client;
-		private string _indexName;
+		private string _dwg_indexName;
 
-		public  ElasticsearchService(string uri, string indexName)
-		{
-			_indexName = indexName;
+		//public  ElasticsearchService(string uri, string indexName)
+		//{
+		//	_dwg_indexName = indexName;
 
-			var settings = new ConnectionSettings(new Uri(uri))
-				.DefaultIndex(indexName);
+		//	var settings = new ConnectionSettings(new Uri(uri))
+		//		.DefaultIndex(indexName);
 
-			client = new ElasticClient(settings);
+		//	client = new ElasticClient(settings);
 
-			ensureIndexExists().Wait();
-		}
+		//	ensureIndexExists().Wait();
+		//}
 		public ElasticsearchService(ElasticClient client)
 		{
 			this.client = client;
 			
 		}
-		public static async Task<ElasticsearchService> CreateAsync(string uri, string indexName)
+		public static async Task<ElasticsearchService> CreateAsync(string uri, string dwg_indexname,string pdf_indexname)
 		{
 			var settings = new ConnectionSettings(new Uri(uri))
-							   .DefaultIndex(indexName);
+							   .DefaultIndex(pdf_indexname);
 
 			var client = new ElasticClient(settings);
+			//using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+			{var existsResponse =  client.Indices.Exists(pdf_indexname);
 
-			var existsResponse = await client.Indices.ExistsAsync(indexName);
+				if (!existsResponse.Exists)
+				{
+					await client.Indices.CreateAsync(pdf_indexname);
+				}
+			}
+			//using var cts2 = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+			{ var existsResponse = client.Indices.Exists(dwg_indexname);
 
-			if (!existsResponse.Exists)
-			{
-				await client.Indices.CreateAsync("dwg");
+				if (!existsResponse.Exists)
+				{
+					await client.Indices.CreateAsync(dwg_indexname);
+				}
 			}
 
 			return new ElasticsearchService(client);
 		}
+		public void deleteIndex(string index)
+		{
+			client.Indices.Delete(index);
+		}
+		public long countIndex(string index)
+		{
+			var response = client.Count<object>(c => c
+				.Index(index));
+			return response.Count;
 
+		}
 		private async Task ensureIndexExists()
 		{
 			//var a = client.Indices.ExistsAsync(_indexName);
-			await Task.Delay(1000);
-			var exists =await client.Indices.ExistsAsync(_indexName);
+			//await Task.Delay(1000);
+			var exists =await client.Indices.ExistsAsync(_dwg_indexName);
 			
 			if (!exists.Exists)
 			{
-				await client.Indices.CreateAsync(_indexName, c => c
+				await client.Indices.CreateAsync(_dwg_indexName, c => c
 					.Map<Text>(m => m.AutoMap())
 				);
 			}
+			exists = await client.Indices.ExistsAsync(_dwg_indexName);
 		}
 
 		public async Task IndexArticleAsync(DwgData article)
 		{
-			
-			var response = await client.IndexDocumentAsync(article);
+
+			var response = await client.IndexAsync(article, i => i.Index("dwg"));
 			if (!response.IsValid)
 			{
 				throw new Exception(response.OriginalException.Message);
@@ -76,15 +97,21 @@ namespace ArchitectIndexer
 
 		public async Task<ISearchResponse<DwgData>> SearchArticlesAsync(string keyword)
 		{
-			var searchResponse = client.Search<DwgData>(s => s
+			var searchResponse = client.Search<DwgData>(s => s.Index("dwg")
 	.Query(q => q
-		.Match(m => m
-			.Field("content.value")
-			.Query(keyword) // Text to search for within the array elements
-		)
-	).Highlight(k=>k.Fields(l=>l.Field("content.value")))
+		.MultiMatch(m => m
+		.Query(keyword) // Text to search for within the array elements
+			.Fields(f=>f
+			.Field("content.value").Field("file")
+			
+		))
+	).Highlight(k=> k.PreTags("<mark>").PostTags("</mark>")
+		.Fields(
+			hf => hf.Field("file"),
+			hf => hf.Field("content.value")
+		))
 		.Size(100) // Limit the number of results returned
-		.Source(src => src.Includes(i => i.Field("content.value").Field(f => f.file)))
+		.Source(src => src.Includes(i => i.Field("content.value").Field("file").Field("id")))
 // Include only the 'content', 'file',  fields in the response
 // Adjust the fields as necessary based on your requirements
 // Note: The 'content' field is an array, so it will return all matching elements
@@ -92,15 +119,17 @@ namespace ArchitectIndexer
 
 			return searchResponse;
 		}
-		public  bool FileExists(string filename)
+		public  async Task<bool> FileExists(string filename)
 		{
-			var searchResponse = client.Search<DwgData>(s => s
+			var searchResponse =await  client.SearchAsync<DwgData>(s => s
 	.Query(q => q
-		.Match(m => m
-			.Field("file")
-			.Query(filename) // Text to search for within the array elements
+		.Term(t => t
+				.Field(f => f.file)       // Use the exact field (usually keyword type)
+				.Value(filename)      // Must match exactly
+			)
 		)
-	)
+	
+
 // Include only the 'content', 'file',  fields in the response
 // Adjust the fields as necessary based on your requirements
 // Note: The 'content' field is an array, so it will return all matching elements

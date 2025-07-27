@@ -3,8 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:ArchitectIndexer" xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        xmlns:local="clr-namespace:ArchitectIndexer" 
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         mc:Ignorable="d"
+         WindowState="Maximized"        
         Title="PlanFind" Height="450" Width="800">
     <Window.DataContext>
         <local:MainVM/>
@@ -13,7 +15,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="100" />
             <RowDefinition Height="40" />
-            <RowDefinition Height="60" />
+            <RowDefinition Height="100" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal"  Grid.Row="0"
@@ -37,18 +39,41 @@
             </StackPanel>
         </StackPanel>
 
-        <StackPanel Orientation="Horizontal" Grid.Row="1" Height="30" HorizontalAlignment="Stretch">
-            <Button Content="Select Directory"  Width="100" Margin="20,0,20,0" Command="{Binding _folderBrowser}"/>
+        <StackPanel Orientation="Horizontal" Grid.Row="1"  HorizontalAlignment="Stretch">
+            <Button Content="Select Directory"  Width="80" Height="30" Margin="20,0,20,0" Command="{Binding _folderBrowser}"/>
             <TextBox Text="{Binding folder}" 
                    HorizontalAlignment="Center" VerticalAlignment="Center"
                    
                    Margin="0,0,0,0" Width="400" />
-            <Button Content="StartIndexing"  Width="100"  Margin="20,0,20,0" Command="{Binding _startIndexing}"/>
+            <Button Content="StartIndexing"  Width="80" Height="30"  Margin="20,0,20,0" Command="{Binding _startIndexing}"/>
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="{Binding DwgCount}" HorizontalAlignment="Center"/>
+                <Button Content="delDwg"  Width="80"  Margin="0,0,2,0" Command="{Binding _delIndex}" CommandParameter="dwg"/>
+            </StackPanel>
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="{Binding PdfCount}" HorizontalAlignment="Center"/>
+                <Button Content="delPdf"  Width="80"  Margin="2,0,2,0" Command="{Binding _delIndex}" CommandParameter="pdf"/>
+            </StackPanel>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Center">
-        <TextBox  Height="30" Width="500" Text="{Binding Query }"/>
+        <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Center" Margin="0,20,0,0">
+        <TextBox  Height="30" Width="500" Text="{Binding Query }" KeyDown="TextBox_KeyDown"/>
             <Button Content="Search" Height="30" Width="80" Command="{Binding _search}"/>
         </StackPanel>
-        <wv2:WebView2 x:Name="HtmlView" Source="about:blank" Grid.Row="3" />
+        <ListBox ItemsSource="{Binding SearchResults }" 
+                SelectedItem="{Binding SelectedResult}" 
+                Margin="10" 
+                Grid.Row="3" 
+                
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Vertical" PreviewMouseDown="StackPanel_PreviewMouseDown">
+                        <TextBlock Text="{Binding DwgData.file}" Margin="5"/>
+                        <wv2:WebView2 local:WebView2Helper.Html="{Binding HtmlContent}" Height="60" Width="600" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
 </Window>

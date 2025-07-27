@@ -99,10 +99,11 @@ namespace DwgCrawler
 		/// <param name="doc"></param>
 		public void ExploreDocument(CadDocument doc,Utils.ArgStorage arguments)
 		{
-			Console.OutputEncoding = Encoding.GetEncoding("Windows-1255");
-			Console.WriteLine();
+			
 			if (arguments.summary )
 			{
+				Console.OutputEncoding = Encoding.GetEncoding("Windows-1255");
+				Console.WriteLine();
 				Console.WriteLine("SUMMARY INFO:");
 				Console.WriteLine($"\tTitle: {doc.SummaryInfo.Title}");
 				Console.WriteLine($"\tSubject: {doc.SummaryInfo.Subject}");
