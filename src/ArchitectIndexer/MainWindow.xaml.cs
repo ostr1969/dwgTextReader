@@ -38,8 +38,8 @@ namespace ArchitectIndexer
 		{
 			if(e.ClickCount==2)
 				{var a = VM.SelectedResult;//= (sender as StackPanel).DataContext as DwgData;
-				Debug.Print(a.DwgData.file);
-				Process.Start("explorer.exe", $"/select,\"{a.DwgData.file}\"");
+				Debug.Print(a.file);
+				Process.Start("explorer.exe", $"/select,\"{a.file}\"");
 			}
 		}
 	}

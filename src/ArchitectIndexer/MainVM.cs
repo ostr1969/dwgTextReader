@@ -1,6 +1,6 @@
-﻿using DwgCrawler;
+﻿//using DwgCrawler;
 using Elasticsearch.Net;
-using Microsoft.Web.WebView2.WinForms;
+//using Microsoft.Web.WebView2.WinForms;
 using Newtonsoft.Json.Linq;
 using Prism.Commands;
 using Prism.Mvvm;
@@ -97,21 +97,36 @@ namespace ArchitectIndexer
 			string ind = Dwgsearch ? "dwg" : "pdf";
 			var results = await es.SearchArticlesAsync(Query,ind);
 			SearchResults.Clear();
-			string HtmlContent = "";
+			
 			foreach (var hit in results.Hits)
-				{if (hit.Highlight.ContainsKey("file"))
+				{
+				string HtmlContent = "";
+				if (hit.Highlight.ContainsKey("file"))
 					HtmlContent = "<h4>File: " + hit.Highlight["file"].FirstOrDefault() + "</h4>";
 				if (hit.Highlight.ContainsKey("content.value"))				
 					foreach (var highlight in hit.Highlight["content.value"])
 					{
 						HtmlContent += "\n" + highlight;
 					}
-				SearchResults.Add(new Presenter { DwgData=hit.Source, HtmlContent= HtmlContent });
+				if (hit.Highlight.ContainsKey("content"))
+					foreach (var highlight in hit.Highlight["content"])
+					{
+						HtmlContent += "\n" + highlight;
+					}
+				var doc = (Dictionary<string, object>)hit.Source;
+				var filename = (string)doc["file"];
+				SearchResults.Add(new Presenter { file = filename, HtmlContent= HtmlContent,plain=HtmlToPlainText(HtmlContent) });
 				
 				
 			}
 			    
 
+		}
+		public static string HtmlToPlainText(string html)
+		{
+			var doc = new HtmlAgilityPack.HtmlDocument();
+			doc.LoadHtml(html);
+			return doc.DocumentNode.InnerText;
 		}
 		private ElasticsearchService es;
 		public async Task<ElasticsearchService> GetElasticsearchService()

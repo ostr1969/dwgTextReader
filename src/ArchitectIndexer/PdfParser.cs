@@ -26,6 +26,7 @@ namespace ArchitectIndexer
 			{
 				// Metadata
 				var info = document.Information;
+				
 				metadata["title"] = info.Title ?? "";
 				metadata["author"] = info.Author ?? "";
 				metadata["subject"] = info.Subject ?? "";
@@ -44,6 +45,7 @@ namespace ArchitectIndexer
 
 			result["metadata"] = metadata;
 			result["content"] = content;
+			result["file"] = filePath;
 
 			return result;
 		}

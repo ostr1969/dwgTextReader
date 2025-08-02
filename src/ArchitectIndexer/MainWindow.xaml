@@ -4,10 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ArchitectIndexer" 
-        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        
+        Height="200"
+        Width="900"
+        
         mc:Ignorable="d"
-         WindowState="Maximized"        
-        Title="PlanFind" Height="450" Width="800">
+              
+        Title="PlanFind" >
     <Window.DataContext>
         <local:MainVM/>
     </Window.DataContext>
@@ -40,7 +43,7 @@
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" Grid.Row="1"  HorizontalAlignment="Stretch">
-            <Button Content="Select Directory"  Width="80" Height="30" Margin="20,0,20,0" Command="{Binding _folderBrowser}"/>
+            <Button Content="Select Directory"  Width="90" Height="30" Margin="20,0,20,0" Command="{Binding _folderBrowser}"/>
             <TextBox Text="{Binding folder}" 
                    HorizontalAlignment="Center" VerticalAlignment="Center"
                    
@@ -55,27 +58,36 @@
                 <Button Content="delPdf"  Width="80"  Margin="2,0,2,0" Command="{Binding _delIndex}" CommandParameter="pdf"/>
             </StackPanel>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Center" Margin="0,20,0,0">
+        <!--<StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Center" Margin="0,20,0,0">
             <RadioButton Content="dwg" GroupName="radio" IsChecked="{Binding Dwgsearch}" VerticalAlignment="Center" Margin="5"/>
             <RadioButton Content="pdf" GroupName="radio"  VerticalAlignment="Center" Margin="5"/>
             <TextBox  Height="30" Width="500" Text="{Binding Query }" KeyDown="TextBox_KeyDown"/>
             <Button Content="Search" Height="30" Width="80" Command="{Binding _search}"/>
         </StackPanel>
-        <ListBox ItemsSource="{Binding SearchResults }" 
+        <Grid Grid.Row="3"  VerticalAlignment="Top">
+            <ListBox ItemsSource="{Binding SearchResults }" 
                 SelectedItem="{Binding SelectedResult}" 
-                Margin="10" 
-                Grid.Row="3" 
-                
+                Margin="10" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 Height="300"  
+               
+               
                 HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Vertical" PreviewMouseDown="StackPanel_PreviewMouseDown">
-                        <TextBlock Text="{Binding DwgData.file}" Margin="5"/>
-                        <wv2:WebView2 local:WebView2Helper.Html="{Binding HtmlContent}" Height="60" Width="600" />
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+                VerticalAlignment="Top">
+    
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <StackPanel Orientation="Vertical" PreviewMouseDown="StackPanel_PreviewMouseDown" ToolTip="Double Click to open folder">
+                                <TextBlock Text="{Binding file}" Margin="5"/>
+                                <TextBlock Text="{Binding plain}" Margin="5"/>
+                               
+                                --><!--<wv2:WebView2 local:WebView2Helper.Html="{Binding HtmlContent}" Height="60" Width="1800" />-->
+                                <!--<WebBrowser x:Name="MyBrowser"  local:WebBrowserHelper.Html="{Binding HtmlContent}"  Width="800"/>--><!--
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>-->
     </Grid>
 </Window>
