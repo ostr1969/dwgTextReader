@@ -1,0 +1,127 @@
+@page "/"
+@rendermode InteractiveServer
+@inject ElasticClient Elastic
+@using Nest
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Diagnostics
+@using vscodeBlazorApp.Components.Models
+
+<div style="display: flex; align-items: center; gap: 20px; margin-top: 20px;">
+
+    <!-- Radio group inline -->
+    <!-- Vertical radio buttons inside a column -->
+    <InputRadioGroup @bind-Value="SelectedIndex" >
+        <div style="display: flex; flex-direction: column;margin-right: 30px;">
+            <div class="form-check">
+                <InputRadio id="index1" Value="@dwgIndex" class="form-check-input" />
+                <label for="index1" class="form-check-label">@dwgIndex</label>
+            </div>
+            <div class="form-check">
+                <InputRadio id="index2" Value="@pdfIndex" class="form-check-input" />
+                <label for="index2" class="form-check-label">@pdfIndex</label>
+            </div>
+        </div>
+    </InputRadioGroup>
+
+    <div style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px;">
+        <img src="images/PlanFind.png" alt="Logo" style="height: 60px;" />
+        <h1 style="margin: 0; white-space: nowrap;">Search in Drawing and PDFs</h1>
+    </div>
+
+</div>
+
+
+
+<div style="text-align:center; margin-top:20px;">
+    <input type="text" @bind="SearchTerm" placeholder="Enter search term..." style="width:80%; padding:8px;" />
+    <button @onclick="SearchAsync" style="padding:8px 20px;">Search</button>
+</div>
+
+@if (SearchResults != null)
+{
+    <div style="margin-top:30px; text-align:left;">
+        <h3 style="margin-top:30px; text-align:center;">Results: @SearchResults.Count()</h3>
+        <ul style="list-style-type:none;">
+            @foreach (var result in SearchResults)
+            {
+                <li style="font-weight: bold; font-size: 1.2em;">@result.file</li>
+                <div>@((MarkupString)result.HtmlContent)</div>
+                <br />
+            }
+        </ul>
+    </div>
+}
+
+@code {
+    private string SelectedIndex = "pdf";
+    private string SearchTerm;
+    //private List<string> SearchResults;
+    string dwgIndex = "dwg";
+    string pdfIndex = "pdf";
+    private List<Presenter> SearchResults ;
+    private async Task SearchAsync()
+    {
+        SearchResults = SearchResults = new List<Presenter>();
+        Debug.WriteLine($" {SelectedIndex} with term: {SearchTerm}");
+        var pingResponse = Elastic.Ping();
+        if (!pingResponse.IsValid)
+        {
+            SearchResults.Add(new Presenter { file = "Elasticsearch is not reachable." });
+            return;
+        }
+        if (!string.IsNullOrWhiteSpace(SearchTerm))
+        {
+            var response = await Elastic.SearchAsync<Dictionary<string, object>>(s => s
+                .Index(SelectedIndex)
+                .Query(q => q
+                   .MultiMatch(m => m
+        .Query(SearchTerm) // Text to search for within the array elements
+            .Fields(f=>f
+            .Field("content.value").
+            Field("file").Field("content")
+        ))).Highlight(k => k.PreTags("<mark>").PostTags("</mark>")
+        .Fields(
+            hf => hf.Field("file"),
+            hf => hf.Field("content.value"),
+            hf => hf.Field("content")
+        ))
+        .Size(100) // Limit the number of results returned
+        .Source(src => src.Includes(i => i.Field("content.value").Field("file").Field("id").Field("content"))));
+
+            if (response.IsValid)
+            {
+                foreach (var hit in response.Hits)
+                {
+                    string HtmlContent = "";
+                    if (hit.Highlight.ContainsKey("file"))
+                        HtmlContent = "<li>File: " + hit.Highlight["file"].FirstOrDefault() + "</li>";
+                    if (hit.Highlight.ContainsKey("content.value"))
+                        foreach (var highlight in hit.Highlight["content.value"])
+                        {
+                            HtmlContent += "<br/>" + highlight;
+                        }
+                    if (hit.Highlight.ContainsKey("content"))
+                        foreach (var highlight in hit.Highlight["content"])
+                        {
+                            HtmlContent += "<br/>" + highlight;
+                        }
+                    var doc = (Dictionary<string, object>)hit.Source;
+                    var filename = (string)doc["file"];
+                    SearchResults.Add(new Presenter { file = filename, HtmlContent = HtmlContent, plain = HtmlToPlainText(HtmlContent) });
+
+
+                }
+            }
+            else
+            {
+                SearchResults.Add(new Presenter {file= "response.ServerError?.Error?.Reason}" });
+            }
+        }
+    }
+    public static string HtmlToPlainText(string html)
+    {
+        var doc = new HtmlAgilityPack.HtmlDocument();
+        doc.LoadHtml(html);
+        return doc.DocumentNode.InnerText;
+    }
+}

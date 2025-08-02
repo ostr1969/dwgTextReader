@@ -54,7 +54,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "esTest", "esTest\esTest.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArchitectIndexer", "ArchitectIndexer\ArchitectIndexer.csproj", "{C8AD0900-2F42-4B7D-B539-BADDAE109646}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorIndexer", "BlazorIndexer\BlazorIndexer.csproj", "{1678CC38-AFAB-4146-A771-193755A347DD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vscodeBlazorApp", "vscodeBlazorApp\vscodeBlazorApp.csproj", "{E4512F0D-9823-E68D-FD05-0776575B0B28}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -99,12 +99,12 @@ Global
 		{C8AD0900-2F42-4B7D-B539-BADDAE109646}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C8AD0900-2F42-4B7D-B539-BADDAE109646}.Test|Any CPU.ActiveCfg = Test|Any CPU
 		{C8AD0900-2F42-4B7D-B539-BADDAE109646}.Test|Any CPU.Build.0 = Test|Any CPU
-		{1678CC38-AFAB-4146-A771-193755A347DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1678CC38-AFAB-4146-A771-193755A347DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1678CC38-AFAB-4146-A771-193755A347DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1678CC38-AFAB-4146-A771-193755A347DD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1678CC38-AFAB-4146-A771-193755A347DD}.Test|Any CPU.ActiveCfg = Test|Any CPU
-		{1678CC38-AFAB-4146-A771-193755A347DD}.Test|Any CPU.Build.0 = Test|Any CPU
+		{E4512F0D-9823-E68D-FD05-0776575B0B28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4512F0D-9823-E68D-FD05-0776575B0B28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4512F0D-9823-E68D-FD05-0776575B0B28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4512F0D-9823-E68D-FD05-0776575B0B28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4512F0D-9823-E68D-FD05-0776575B0B28}.Test|Any CPU.ActiveCfg = Test|Any CPU
+		{E4512F0D-9823-E68D-FD05-0776575B0B28}.Test|Any CPU.Build.0 = Test|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
