@@ -128,7 +128,7 @@
             }
             else if (ext == ".dwg")
             {
-                var dwg = fileToDwgdata(file);
+                var dwg = fileToDwgdata(file,Options.Value);
                 try
                 {
                     await es.IndexArticleAsync(dwg);
@@ -144,13 +144,13 @@
         }
         NotifService.Notify(NotificationSeverity.Success, "Finished Indexing", "All files in folder indexed!", duration: 8000, closeOnClick: true);
     }
-    static DwgData fileToDwgdata(string path)
+    static DwgData fileToDwgdata(string path,CrawlerOptions options)
     {
         // 1. Run the external executable and capture the JSON output
 
 
 
-        var p = DwgParser.JsonFromDwg(path);
+        var p = DwgParser.JsonFromDwg(path,options);
         var jsonOutput = p.esStorage.ToLowercaseKeys();
         var dwg = DwgData.FromJObject(jsonOutput);
         return dwg;

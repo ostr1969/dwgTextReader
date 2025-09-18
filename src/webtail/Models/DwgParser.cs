@@ -3,6 +3,9 @@ using ACadSharp.Entities;
 using ACadSharp.IO;
 using ACadSharp.Tables;
 using ACadSharp.Tables.Collections;
+//using Utils = DwgCrawler.Utils;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 //using DwgCrawler.Common;
 using System;
 using System.Collections.Generic;
@@ -15,23 +18,22 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 //using System.Windows.Forms;
 using System.Xml;
+using webtail.Models;
 using static System.Net.Mime.MediaTypeNames;
-//using Utils = DwgCrawler.Utils;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+
 
 
 namespace webtail.Models
 {
 	public class DwgParser
 	{
-		// const string _file = "../../../../../samples/sample_AC1032.dwg";
-		//const string _file = "../../../../../samples/7227.dwg";
-		const string _FontPath = @"C:\Program Files\Autodesk\DWG TrueView 2026 - English\Fonts";
+		
+		//const string _FontPath = @"C:\Program Files\Autodesk\DWG TrueView 2026 - English\Fonts";
 		public List<string> frog_styles, rev_styles, encode_styles;
 		public CadDocument doc;
 		public JObject esStorage = new();
 		public JArray esStorageContent = new();
+		public CrawlerOptions crawlerOptions;
 		public  void WriteDwg(string file)
 		{
 			using (DwgWriter writer = new DwgWriter(file, doc))
@@ -40,7 +42,7 @@ namespace webtail.Models
 				writer.Write();
 			}
 		}
-		public static DwgParser JsonFromDwg(string path) //entry for json only
+		public static DwgParser JsonFromDwg(string path,CrawlerOptions options) //entry for json only
 		{
 			var args = new ArgStorage
 			{
@@ -58,18 +60,18 @@ namespace webtail.Models
 				vports = false
 			};
 
-
-			var p = new DwgParser(args);
+			
+			var p = new DwgParser(args,options);
 			return p;
 		}
-		public  DwgParser(ArgStorage arguments)
+		public  DwgParser(ArgStorage arguments,CrawlerOptions options)
 		{
 			//var arguments = ArgParser(args);
-			 frog_styles = File.ReadLines("frog_list.csv").First().Split(",").Select(item => item.Trim()).ToList();
-			 rev_styles = File.ReadLines("rev_list.csv").First().Split(",").Select(item => item.Trim()).ToList();
-			 encode_styles = File.ReadLines("encode_list.csv").First().Split(",").Select(item => item.Trim()).ToList();
+			 frog_styles = File.ReadLines(options.FrogList).First().Split(",").Select(item => item.Trim()).ToList();
+			 rev_styles = File.ReadLines(options.ReverseList).First().Split(",").Select(item => item.Trim()).ToList();
+			 encode_styles = File.ReadLines(options.EncodeList).First().Split(",").Select(item => item.Trim()).ToList();
 
-
+			crawlerOptions = options;
 
 			if (arguments.DwgFiles is null)
 				arguments.DwgFiles = new string[1] { arguments.File };
@@ -82,8 +84,11 @@ namespace webtail.Models
 				using (DwgReader reader = new DwgReader(_file))
 				{
 					doc = reader.Read();
-					//preview = reader.ReadPreview();
-					ExploreDocument(doc,arguments);
+					try
+
+					{ ExploreDocument(doc, arguments); }
+					catch (Exception ex) { Console.WriteLine(ex.ToString());
+					}
 				}
 			}
 			
@@ -153,16 +158,26 @@ namespace webtail.Models
 				ExploreTable(doc.Views, true);
 			if (arguments.vports)
 				ExploreTable(doc.VPorts, true);
-			if (arguments.content )
-			{								
-				Console.WriteLine("Content:");				
-					 ExploreEntities(doc.Entities,"", true);				
+			if (arguments.content)
+			{
+				Console.WriteLine("Content:");
+				try { ExploreEntities(doc.Entities, "", true); }
+				catch (Exception ex)
+				{
+					Console.WriteLine(ex.ToString());
+
+				}
 			}
 			else
-				ExploreEntities(doc.Entities, "", false);
-			esStorage["content"] = esStorageContent;
-			esStorage=esStorage.ToLowercaseKeys();
+				try
+				{
+					ExploreEntities(doc.Entities, "", false);
 
+					esStorage["content"] = esStorageContent;
+					esStorage = esStorage.ToLowercaseKeys();
+				}
+				catch (Exception ex) { Console.WriteLine(ex.ToString());
+				}
 
 		}
 		static void ConditionalWrite(string s,bool active) { 
@@ -230,7 +245,7 @@ namespace webtail.Models
 				{
 					
 						(tval,tvalr) = txtdecode(om,om.Value);
-					if (File.Exists(Path.Combine(_FontPath, om.Style.Name + ".shx")))
+					if (File.Exists(Path.Combine(crawlerOptions.DwgFontFolder, om.Style.Name + ".shx")))
 						style = om.Style.Name;
 					else
 					{
@@ -255,7 +270,7 @@ namespace webtail.Models
 
 					(tval, tvalr) = txtdecode(oa,oa.Value);
 
-					if (File.Exists(Path.Combine(_FontPath, oa.Style.Name + ".shx")))
+					if (File.Exists(Path.Combine(crawlerOptions.DwgFontFolder, oa.Style.Name + ".shx")))
 						style = oa.Style.Name;
 					else
 					{
@@ -286,7 +301,7 @@ namespace webtail.Models
 					(tval, tvalr) = txtdecode(ot,ot.Value);
 
 
-					if (File.Exists(Path.Combine(_FontPath, ot.Style.Name + ".shx")))
+					if (File.Exists(Path.Combine(crawlerOptions.DwgFontFolder, ot.Style.Name + ".shx")))
 						style = ot.Style.Name;
 					else
 						style = $"#{ot.Style.Name}#";
