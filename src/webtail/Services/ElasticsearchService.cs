@@ -110,15 +110,25 @@ namespace webtail.Models
 		}
 		
 
-		public async Task IndexArticleAsync(DwgData article)
+		public async Task IndexDwgAsync(DwgData dwg)
 		{
 
-			var response = await client.IndexAsync(article, i => i.Index("dwg"));
+			var response = await client.IndexAsync(dwg, i => i.Index("dwg"));
 			if (!response.IsValid)
 			{
 				throw new Exception(response.OriginalException.Message);
 			}
-			Console.WriteLine($"Indexed: {article.file}");
+			Console.WriteLine($"Indexed: {dwg.file}");
+		}
+		public async Task IndexDwgAsync(TextFileData txt)
+		{
+
+			var response = await client.IndexAsync(txt, i => i.Index("other"));
+			if (!response.IsValid)
+			{
+				throw new Exception(response.OriginalException.Message);
+			}
+			Console.WriteLine($"Indexed: {txt.file}");
 		}
 
 		public async Task<ISearchResponse<object>> SearchArticlesAsync(string keyword,string index)

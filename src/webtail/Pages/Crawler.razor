@@ -3,6 +3,7 @@
 @using Elasticsearch.Net
 @using Models
 @using Radzen
+@using System.Text
 @inject Microsoft.Extensions.Options.IOptions<CrawlerOptions> Options
 @inject NotificationService NotifService;
 <RadzenNotification />
@@ -141,10 +142,13 @@
             }
             else if (ext == ".dwg")
             {
+                var exists = await es.FileExists(file, ext);
+                if (exists)
+                    continue;
                 var dwg = fileToDwgdata(file,Options.Value);
                 try
                 {
-                    await es.IndexArticleAsync(dwg);
+                    await es.IndexDwgAsync(dwg);
 
                 }
                 catch (Exception ex)
@@ -154,6 +158,35 @@
             }
             else if(Extensions.IsPlainTextFile(file))
             {
+                var exists = await es.FileExists(file, ext);
+                if (exists)
+                    continue;
+                string text = File.ReadAllText(file, Encoding.Default);
+                System.IO.FileInfo fi = new System.IO.FileInfo(file);
+                var md = new TxtMetadata
+                    {
+                        Extension = fi.Extension,
+                        Size = fi.Length,
+                        Created = fi.CreationTime,
+                        LastModified = fi.LastWriteTime,
+                        FullPath = fi.FullName
+                    };
+                var txt = new TextFileData
+                    {
+                       metadata=md,
+                        file = file,
+                        content = text,
+                       
+                    };
+                try
+                {
+                    await es.IndexDwgAsync(txt);
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error indexing {file}: {ex.Message}");
+                }
 
             }
             if (totalFilesCounter % 10 == 0)

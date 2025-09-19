@@ -72,9 +72,13 @@ namespace webtail.Models
 		}
 		public DwgParser(string filename, CrawlerOptions options)
 		{
-			frog_styles = System.IO.File.ReadLines(options.FrogList).First().Split(",").Select(item => item.Trim()).ToList();
-			rev_styles = System.IO.File.ReadLines(options.ReverseList).First().Split(",").Select(item => item.Trim()).ToList();
-			encode_styles = System.IO.File.ReadLines(options.EncodeList).First().Split(",").Select(item => item.Trim()).ToList();
+			string baseDir = AppContext.BaseDirectory;
+			string frogfile = Path.Combine(baseDir, "Resources", "frog_list.csv");
+			string revfile = Path.Combine(baseDir, "Resources", "rev_list.csv");
+			string encodefile = Path.Combine(baseDir, "Resources", "encode_list.csv");
+			frog_styles = System.IO.File.ReadLines(frogfile).First().Split(",").Select(item => item.Trim()).ToList();
+			rev_styles = System.IO.File.ReadLines(revfile).First().Split(",").Select(item => item.Trim()).ToList();
+			encode_styles = System.IO.File.ReadLines(encodefile).First().Split(",").Select(item => item.Trim()).ToList();
 			crawlerOptions = options;
 			Filename = filename;
 			using (DwgReader reader = new DwgReader(filename))
@@ -92,10 +96,13 @@ namespace webtail.Models
 		}
 		public  DwgParser(ArgStorage arguments,CrawlerOptions options)
 		{
-			//var arguments = ArgParser(args);
-			 frog_styles = System.IO.File.ReadLines(options.FrogList).First().Split(",").Select(item => item.Trim()).ToList();
-			 rev_styles = System.IO.File.ReadLines(options.ReverseList).First().Split(",").Select(item => item.Trim()).ToList();
-			 encode_styles = System.IO.File.ReadLines(options.EncodeList).First().Split(",").Select(item => item.Trim()).ToList();
+			string baseDir = AppContext.BaseDirectory;
+			string frogfile = Path.Combine(baseDir, "Resources", "frog_list.csv");
+			string revfile = Path.Combine(baseDir, "Resources", "rev_list.csv");
+			string encodefile = Path.Combine(baseDir, "Resources", "encode_list.csv");
+			frog_styles = System.IO.File.ReadLines(frogfile).First().Split(",").Select(item => item.Trim()).ToList();
+			rev_styles = System.IO.File.ReadLines(revfile).First().Split(",").Select(item => item.Trim()).ToList();
+			encode_styles = System.IO.File.ReadLines(encodefile).First().Split(",").Select(item => item.Trim()).ToList();
 
 			crawlerOptions = options;
 
@@ -283,6 +290,9 @@ namespace webtail.Models
 			string style, tval,tvalr, lay;
 			//Console.WriteLine($"\tBlock Name: {blk.Name}");
 			//var a = blk.Entities.Where(o => o.ObjectName == "TEXT").ToList();
+			string baseDir = AppContext.BaseDirectory;
+			string fontfolder = Path.Combine(baseDir, "Resources", "Fonts");
+			
 			
 			foreach (var o in collection)
 			{
@@ -296,7 +306,7 @@ namespace webtail.Models
 				{
 					
 						(tval,tvalr) = txtdecode(om,om.Value);
-					if (System.IO.File.Exists(Path.Combine(crawlerOptions.DwgFontFolder, om.Style.Name + ".shx")))
+					if (System.IO.File.Exists(Path.Combine(fontfolder, om.Style.Name + ".shx")))
 						style = om.Style.Name;
 					else
 					{
@@ -322,7 +332,7 @@ namespace webtail.Models
 
 					(tval, tvalr) = txtdecode(oa,oa.Value);
 
-					if (System.IO.File.Exists(Path.Combine(crawlerOptions.DwgFontFolder, oa.Style.Name + ".shx")))
+					if (System.IO.File.Exists(Path.Combine(fontfolder, oa.Style.Name + ".shx")))
 						style = oa.Style.Name;
 					else
 					{
@@ -354,7 +364,7 @@ namespace webtail.Models
 					(tval, tvalr) = txtdecode(ot,ot.Value);
 
 
-					if (System.IO.File.Exists(Path.Combine(crawlerOptions.DwgFontFolder, ot.Style.Name + ".shx")))
+					if (System.IO.File.Exists(Path.Combine(fontfolder, ot.Style.Name + ".shx")))
 						style = ot.Style.Name;
 					else
 						style = $"#{ot.Style.Name}#";

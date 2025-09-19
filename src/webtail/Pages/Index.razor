@@ -2,26 +2,32 @@
 
 <PageTitle>Web Tails</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container mt-5">
+    <div class="card shadow-sm p-4">
+        <h1 class="mb-3">Hello, user!</h1>
+        <p class="lead mb-4">
+            Welcome to <strong>DWG</strong> and <strong>PDF</strong> indexing.
+        </p>
 
-Welcome to dwg and pdf indexing.
-<br />
-The software can index dwg and pdf files and all other text files to elasticsearch
-and allow searching.
+        <p>
+            This software can index <strong>DWG</strong> and <strong>PDF</strong> files and all other text files to <strong>Elasticsearch</strong> and allows searching.
+        </p>
 
-<h2>Usage:</h2>
+        <h4 class="mt-4">Usage</h4>
+        <ol>
+            <li>Go to the  <NavLink class="fw-bold" href="/filecrawler">File Crawler</NavLink>  tab and add a list of folders to search in.</li>
+            <li>Press <strong>Start Crawling</strong>. All files in those folders will be indexed.</li>
+            <li>While indexing, you can start searching on the  <NavLink class="fw-bold" href="/search">Search Page</NavLink> .</li>
+        </ol>
 
-First go to File Crawler tab add a list of folders to search in.
-<br />
-Than press "Start crawling" and all the files on those folders will be indexed.
-<br />
+        <h4 class="mt-4">Requirements</h4>
+        <ul>
+            <li>Elasticsearch installed and running on localhost.</li>
+        </ul>
 
-While indexing you can start searching on the Search Page.
-
-<h2>Requirements:</h2>
-ElasticSearch installed and working on local host.
-
-<h2>Acnolagements:</h2>
-    Me and myself.
+        <h4 class="mt-4">Acknowledgements</h4>
+        <p> <a href="mailto:youremail@example.com">Me</a> and myself.</p>
+    </div>
+</div>
 
 
