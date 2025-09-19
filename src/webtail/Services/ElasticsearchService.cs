@@ -1,5 +1,7 @@
-﻿using ACadSharp.Tables.Collections;
+﻿using ACadSharp;
+using ACadSharp.Tables.Collections;
 using Nest;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,10 +25,10 @@ namespace webtail.Models
 			this.client = client;
 			
 		}
-		public static async Task<ElasticsearchService> CreateAsync(string uri, string dwg_indexname,string pdf_indexname)
+		public static async Task<ElasticsearchService> CreateAsync(string uri, List<string> indexes)
 		{
 			var settings = new ConnectionSettings(new Uri(uri))
-							   .DefaultIndex(pdf_indexname).RequestTimeout(TimeSpan.FromSeconds(2));
+							   .DefaultIndex(indexes[0]).RequestTimeout(TimeSpan.FromSeconds(2));
 
 			var client = new ElasticClient(settings);
 			var pingResponse = client.Ping();
@@ -39,29 +41,21 @@ namespace webtail.Models
 			{
 				return null;
 			}
+			foreach (var ind in indexes)
 			
-				var existsResponse =  client.Indices.Exists(pdf_indexname);
+				{var existsResponse =  client.Indices.Exists(ind);
 
 				if (!existsResponse.Exists)
 				{
-					var res=await client.Indices.CreateAsync(pdf_indexname, c => c
+					var res = await client.Indices.CreateAsync(ind, c => c
 						.Map(m => m
 						.Dynamic(true)  // Allows dynamic fields
 						.AutoMap()
 						));
 				}
+			}
 			
-			//using var cts2 = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-			  existsResponse =  client.Indices.Exists(dwg_indexname);
-
-				if (!existsResponse.Exists)
-				{
-					await client.Indices.CreateAsync(dwg_indexname, c => c
-					.Map(m => m
-						.Dynamic(true)  // Allows dynamic fields
-						.AutoMap()
-					));
-				}
+			
 			
 
 			return new ElasticsearchService(client);
@@ -172,70 +166,6 @@ namespace webtail.Models
 
 
 	}
-	public class DwgData
-	{
-		public string id { get; set; }
-		public string file { get; set; }
-		public List<string> layers { get; set; }
-		public List<string> textstyles { get; set; }
-		public List<Text> content { get; set; }
-
-		public static DwgData FromJObject(Newtonsoft.Json.Linq.JObject jObject)
-		{
-			var container = new DwgData();
-			container.layers = new List<string>();
-			container.textstyles = new List<string>();
-			container.content = new List<Text>();
-
-
-			container.id = jObject["id"]?.ToString();
-			container.file = jObject["file"]?.ToString();
-
-			// Parse stylesList (array of strings)
-			var stylesToken = jObject["textstyles"];
-			if (stylesToken != null && stylesToken.Type == Newtonsoft.Json.Linq.JTokenType.Array)
-			{
-				foreach (var style in stylesToken)
-					container.textstyles.Add(style.ToString());
-			}
-			var layersToken = jObject["layers"];
-			if (layersToken != null && layersToken.Type == Newtonsoft.Json.Linq.JTokenType.Array)
-			{
-				foreach (var style in layersToken)
-					container.layers.Add(style.ToString());
-			}
-
-			// Parse objectList (array of objects with "type" and "value")
-			var objectListToken = jObject["content"];
-			if (objectListToken != null && objectListToken.Type == Newtonsoft.Json.Linq.JTokenType.Array)
-			{
-				foreach (var item in objectListToken)
-				{
-					var obj = new Text
-					{
-						type = item["type"]?.ToString(),
-						value = item["value"]?.ToString(),
-						layer = item["layer"]?.ToString(),
-						style = item["style"]?.ToString(),
-						prompt = item["prompt"]?.ToString(),
-						block = item["block"]?.ToString()
-
-					};
-					container.content.Add(obj);
-				}
-			}
-
-			return container;
-		}
-	}
-	public class Text
-	{
-		public string type { get; set; }
-		public string value { get; set; }
-		public string layer { get; set; }
-		public string style { get; set; }
-		public string prompt { get; set; }
-		public string block { get; set; }
-
-	}
+	
+	
 }

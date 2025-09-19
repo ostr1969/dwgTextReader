@@ -17,6 +17,7 @@
     }
 </style>
 
+<PageTitle>Es Search</PageTitle>
 
 <h3>Article Search</h3>
 
@@ -31,6 +32,9 @@
     </label>
     <label class="ms-3">
         <input type="checkbox" @bind="SearchPdf" /> PDF
+    </label>
+    <label class="ms-3">
+        <input type="checkbox" @bind="SearchOther" /> Other
     </label>
 </div>
 
@@ -89,6 +93,7 @@ else if (HasSearched)
     Popup popup;
     private bool SearchDwg { get; set; } = true;
     private bool SearchPdf { get; set; } = true;
+    private bool SearchOther { get; set; } = true;
 
     private bool IsSearching { get; set; } = false;
     private bool HasSearched { get; set; } = false;
@@ -133,11 +138,20 @@ else if (HasSearched)
         Results.Clear();
         SelectedRecord = null;
         CurrentPage = 1;
+        var indtosearch = new List<string>();
+        if (SearchDwg)
+            indtosearch.Add("dwg");
+        if (SearchPdf)
+            indtosearch.Add("pdf");
+        if (SearchOther)
+            indtosearch.Add("other");
+
 
         try
         {
+            foreach (var ind in indtosearch)
             // 🔎 Call your search function
-            var results = await es.SearchArticlesAsync(SearchQuery, "pdf");
+           { var results = await es.SearchArticlesAsync(SearchQuery, ind);
             foreach (var hit in results.Hits)
             {
                 string HtmlContent = "";
@@ -148,11 +162,11 @@ else if (HasSearched)
                     filename = hit.Highlight["file"].FirstOrDefault();
                 else
                     filename = (string)doc["file"];
-                if (hit.Highlight.ContainsKey("content.value"))
-                    foreach (var highlight in hit.Highlight["content.value"])
-                    {
-                        HtmlContent += "\n" + highlight;
-                    }
+                // if (hit.Highlight.ContainsKey("content.value"))
+                //     foreach (var highlight in hit.Highlight["content.value"])
+                //     {
+                //         HtmlContent += "\n" + highlight;
+                //     }
                 if (hit.Highlight.ContainsKey("content"))
                     foreach (var highlight in hit.Highlight["content"])
                     {
@@ -163,7 +177,7 @@ else if (HasSearched)
                 Results.Add(new SearchResult { Title = filename, Highlight = HtmlContent,Metadata=meta });
 
 
-            }
+            }}
         }
         catch (Exception ex)
         {

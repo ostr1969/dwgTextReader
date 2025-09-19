@@ -40,6 +40,39 @@ namespace webtail.Models
 			Array.Reverse(chars);
 			return new string(chars);
 		}
+		public static bool IsPlainTextFile(string path, int sampleSize = 8000)
+		{
+			// quick extension check first
+			string ext = Path.GetExtension(path).ToLowerInvariant();
+			
+
+			// verify content
+			try
+			{
+				using var stream = File.OpenRead(path);
+				byte[] buffer = new byte[Math.Min(sampleSize, (int)stream.Length)];
+				int read = stream.Read(buffer, 0, buffer.Length);
+
+				for (int i = 0; i < read; i++)
+				{
+					byte b = buffer[i];
+
+					// skip common control chars: tab, newline, carriage return
+					if (b == 0x09 || b == 0x0A || b == 0x0D)
+						continue;
+
+					// if control characters show up → binary
+					if (b < 0x20 || b == 0x7F)
+						return false;
+				}
+
+				return true;
+			}
+			catch
+			{
+				return false; // unreadable file, treat as non-text
+			}
+		}
 
 		private static JArray ProcessArray(JArray array)
 		{

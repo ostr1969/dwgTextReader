@@ -20,6 +20,7 @@ using System.Text.Json.Nodes;
 using System.Xml;
 using webtail.Models;
 using static System.Net.Mime.MediaTypeNames;
+using static System.Net.WebRequestMethods;
 
 
 
@@ -30,10 +31,15 @@ namespace webtail.Models
 		
 		//const string _FontPath = @"C:\Program Files\Autodesk\DWG TrueView 2026 - English\Fonts";
 		public List<string> frog_styles, rev_styles, encode_styles;
-		public CadDocument doc;
+		public CadDocument? doc;
 		public JObject esStorage = new();
 		public JArray esStorageContent = new();
 		public CrawlerOptions crawlerOptions;
+		public CadSummaryInfo? CadSummaryInfo;
+		public List<string> TextStyles = new();
+		public List<string> Layers = new();
+		public List<DwgText> dwgTexts = new();
+		public string? Filename;
 		public  void WriteDwg(string file)
 		{
 			using (DwgWriter writer = new DwgWriter(file, doc))
@@ -64,12 +70,32 @@ namespace webtail.Models
 			var p = new DwgParser(args,options);
 			return p;
 		}
+		public DwgParser(string filename, CrawlerOptions options)
+		{
+			frog_styles = System.IO.File.ReadLines(options.FrogList).First().Split(",").Select(item => item.Trim()).ToList();
+			rev_styles = System.IO.File.ReadLines(options.ReverseList).First().Split(",").Select(item => item.Trim()).ToList();
+			encode_styles = System.IO.File.ReadLines(options.EncodeList).First().Split(",").Select(item => item.Trim()).ToList();
+			crawlerOptions = options;
+			Filename = filename;
+			using (DwgReader reader = new DwgReader(filename))
+			{
+				doc = reader.Read();
+				
+				try
+
+				{ ExploreDocumentBin(doc); }
+				catch (Exception ex)
+				{
+					Console.WriteLine(ex.ToString());
+				}
+			}
+		}
 		public  DwgParser(ArgStorage arguments,CrawlerOptions options)
 		{
 			//var arguments = ArgParser(args);
-			 frog_styles = File.ReadLines(options.FrogList).First().Split(",").Select(item => item.Trim()).ToList();
-			 rev_styles = File.ReadLines(options.ReverseList).First().Split(",").Select(item => item.Trim()).ToList();
-			 encode_styles = File.ReadLines(options.EncodeList).First().Split(",").Select(item => item.Trim()).ToList();
+			 frog_styles = System.IO.File.ReadLines(options.FrogList).First().Split(",").Select(item => item.Trim()).ToList();
+			 rev_styles = System.IO.File.ReadLines(options.ReverseList).First().Split(",").Select(item => item.Trim()).ToList();
+			 encode_styles = System.IO.File.ReadLines(options.EncodeList).First().Split(",").Select(item => item.Trim()).ToList();
 
 			crawlerOptions = options;
 
@@ -84,6 +110,7 @@ namespace webtail.Models
 				using (DwgReader reader = new DwgReader(_file))
 				{
 					doc = reader.Read();
+					esStorage["summaryinfo"] =JToken.FromObject( doc.SummaryInfo);
 					try
 
 					{ ExploreDocument(doc, arguments); }
@@ -180,6 +207,25 @@ namespace webtail.Models
 				}
 
 		}
+		public void ExploreDocumentBin(CadDocument doc)
+		{
+			CadSummaryInfo = doc.SummaryInfo;
+			
+			
+			List<string> fontlist = new List<string>();
+			
+			foreach (var l in doc.Layers)
+			{ layersStatus[l.Name] = l.IsOn; }
+
+				ExploreTable(doc.Layers, false);
+				ExploreTable(doc.TextStyles, false);
+
+
+			try { ExploreEntities(doc.Entities, "", false); }
+			catch (Exception ex) { Console.WriteLine("error on parsing dwg file"); }
+				
+
+		}
 		static void ConditionalWrite(string s,bool active) { 
 			if (active)
 				Console.WriteLine(s);
@@ -203,9 +249,14 @@ namespace webtail.Models
 				if (table is TextStylesTable)
 				{
 					ts.Add(item.Name);
+					if (!TextStyles.Contains(item.Name))
+						TextStyles.Add(item.Name);
 					 }
 				if (table is LayersTable)
-					ls.Add(item.Name);
+					{ ls.Add(item.Name);
+					if (!Layers.Contains(item.Name))
+						Layers.Add(item.Name);
+				}
 
 
 				if (item is BlockRecord blk)
@@ -245,7 +296,7 @@ namespace webtail.Models
 				{
 					
 						(tval,tvalr) = txtdecode(om,om.Value);
-					if (File.Exists(Path.Combine(crawlerOptions.DwgFontFolder, om.Style.Name + ".shx")))
+					if (System.IO.File.Exists(Path.Combine(crawlerOptions.DwgFontFolder, om.Style.Name + ".shx")))
 						style = om.Style.Name;
 					else
 					{
@@ -262,6 +313,7 @@ namespace webtail.Models
 						["layer"] = lay,
 						["block"] = ownerName
 					});
+					dwgTexts.Add(new DwgText { block=ownerName,type="mtext",style= style.Replace("#", ""), value=tval,layer=lay});
 				}
 
 				if (o is ACadSharp.Entities.AttributeDefinition oa)
@@ -270,7 +322,7 @@ namespace webtail.Models
 
 					(tval, tvalr) = txtdecode(oa,oa.Value);
 
-					if (File.Exists(Path.Combine(crawlerOptions.DwgFontFolder, oa.Style.Name + ".shx")))
+					if (System.IO.File.Exists(Path.Combine(crawlerOptions.DwgFontFolder, oa.Style.Name + ".shx")))
 						style = oa.Style.Name;
 					else
 					{
@@ -292,6 +344,7 @@ namespace webtail.Models
 						["layer"] = lay,
 						["block"] = ownerName
 					});
+					dwgTexts.Add(new DwgText { block = ownerName, type = "att", style = style.Replace("#", ""), value = tval, layer = lay,prompt=prompt.Item1 });
 					continue;
 				}
 				if (o is ACadSharp.Entities.TextEntity ot)
@@ -301,7 +354,7 @@ namespace webtail.Models
 					(tval, tvalr) = txtdecode(ot,ot.Value);
 
 
-					if (File.Exists(Path.Combine(crawlerOptions.DwgFontFolder, ot.Style.Name + ".shx")))
+					if (System.IO.File.Exists(Path.Combine(crawlerOptions.DwgFontFolder, ot.Style.Name + ".shx")))
 						style = ot.Style.Name;
 					else
 						style = $"#{ot.Style.Name}#";
@@ -316,6 +369,7 @@ namespace webtail.Models
 						["layer"] = lay,
 						["block"] = ownerName
 					});
+					dwgTexts.Add(new DwgText { block = ownerName, type = "text", style = style.Replace("#", ""), value = tval, layer = lay });
 				}
 				if (o is ACadSharp.Entities.Insert oi)
 				{

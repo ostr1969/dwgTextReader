@@ -6,12 +6,13 @@
 @inject Microsoft.Extensions.Options.IOptions<CrawlerOptions> Options
 @inject NotificationService NotifService;
 <RadzenNotification />
+<PageTitle>Indexer</PageTitle>
 <h3>File Crawler</h3>
 
 <div class="mb-3">
-    <label>Folder Path:</label>
+    <label>Folder Paths (seperate by semicolon):</label>
     <input type="text" class="form-control" @bind="folderPath" />
-    @if (!string.IsNullOrEmpty(folderPath) && !Directory.Exists(folderPath))
+    @if (!string.IsNullOrEmpty(folderPath) && !CheckFolders())
     {
         <div class="text-danger">⚠️ The path does not exist.</div>
     }
@@ -75,7 +76,7 @@
     {
         if (es == null)
         {
-            es = await ElasticsearchService.CreateAsync(uri: "http://localhost:9200", dwg_indexname: "dwg", pdf_indexname: "pdf");
+            es = await ElasticsearchService.CreateAsync(uri: "http://localhost:9200", new List<string>{"pdf","dwg","other"});
         }
         if (es is null)
         {
@@ -87,8 +88,20 @@
     {
         es.deleteIndex("dwg");
         es.deleteIndex("pdf");
+        es.deleteIndex("other");
         es = null;
         extensionStats = new();
+    }
+
+    public bool CheckFolders()
+    {
+        var folders = folderPath.Split(";");
+
+        foreach (var f in folders)
+            if (!Directory.Exists(f))
+                return false;
+
+        return true;
     }
 
     private async Task StartCrawling()
@@ -124,7 +137,7 @@
                     "pdf",    // index name
                     PostData.String(pdfParser.PdfData.ToString()));
 
-               
+
             }
             else if (ext == ".dwg")
             {
@@ -139,6 +152,10 @@
                     Console.WriteLine($"Error indexing {file}: {ex.Message}");
                 }
             }
+            else if(Extensions.IsPlainTextFile(file))
+            {
+
+            }
             if (totalFilesCounter % 10 == 0)
                 StateHasChanged();
         }
@@ -150,9 +167,10 @@
 
 
 
-        var p = DwgParser.JsonFromDwg(path,options);
-        var jsonOutput = p.esStorage.ToLowercaseKeys();
-        var dwg = DwgData.FromJObject(jsonOutput);
+        //var p = DwgParser.JsonFromDwg(path,options);
+        var pp = new DwgParser(path,options);
+        //var jsonOutput = p.esStorage.ToLowercaseKeys();
+        var dwg = DwgData.FromParser(pp);
         return dwg;
 
     }

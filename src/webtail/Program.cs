@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Radzen;
 using webtail.Data;
@@ -15,7 +15,7 @@ builder.Services.AddRazorComponents()
 	.AddInteractiveServerComponents();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.Configure<CrawlerOptions>(builder.Configuration.GetSection("Crawler"));
-
+//builder.WebHost.UseUrls("http://localhost:5000");
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -31,5 +31,10 @@ app.UseRouting();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+Console.WriteLine("WEBTAILS indexer Server started:");
+foreach (var address in app.Urls)
+{
+	Console.WriteLine($"🚀 Server started at: {address}");
+}
 
 app.Run();
