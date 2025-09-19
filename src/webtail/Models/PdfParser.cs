@@ -39,7 +39,7 @@ namespace webtail.Models
 				// Content
 				foreach (var page in document.GetPages())
 				{
-					content += page.Text + "\n";
+					content += UglyToadTextExtractor.ExtractPageText(page);
 				}
 			}
 

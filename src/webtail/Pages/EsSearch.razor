@@ -1,0 +1,199 @@
+﻿@page "/search"
+@using webtail.Models
+@inject ILogger<EsSearch> Logger
+@using Radzen.Blazor.Rendering
+@inject NotificationService NotifService;
+<style type="text/css">
+    .my-popup {
+        display: none;
+        position: absolute;
+        overflow: hidden;
+        height: 360px;
+        width: 600px;
+        border: var(--rz-panel-border);
+        background-color: var(--rz-panel-background-color);
+        box-shadow: var(--rz-panel-shadow);
+        border-radius: var(--rz-border-radius)
+    }
+</style>
+
+
+<h3>Article Search</h3>
+
+<div class="search-bar" style="display:flex; align-items:center; gap:10px;">
+    <input type="text" @bind="SearchQuery" placeholder="Enter search text..." class="form-control" />
+    <button class="btn btn-primary" @onclick="PerformSearch">Search</button>
+</div>
+
+<div class="mt-3">
+    <label>
+        <input type="checkbox"  @bind="SearchDwg" /> DWG
+    </label>
+    <label class="ms-3">
+        <input type="checkbox" @bind="SearchPdf" /> PDF
+    </label>
+</div>
+
+@if (IsSearching)
+{
+    <p><em>Searching...</em></p>
+}
+else if (Results?.Any() == true)
+{
+    <h5 class="mt-3">Results (Page @CurrentPage of @TotalPages)</h5>
+
+    <ul class="list-group">
+        @foreach (var result in PagedResults)
+        {
+            <li class="list-group-item">
+                <div>
+                    <strong> @((MarkupString)result.Title)</strong>
+                   
+                </div>
+                <div>
+                    @((MarkupString)result.Highlight)   <!-- highlight HTML -->
+                </div>
+               
+                <div class="rz-p-2 align-content-lg-start">
+                    <RadzenButton @ref=button Text="Full Record" Click="() => ShowFullRecord(result)" />
+                </div>
+            </li>
+        }
+    </ul>
+   
+
+    <div class="mt-3">
+        <button class="btn btn-secondary" disabled="@(!CanPrev)" @onclick="PrevPage">Previous</button>
+        <button class="btn btn-secondary ms-2" disabled="@(!CanNext)" @onclick="NextPage">Next</button>
+    </div>
+}
+else if (HasSearched)
+{
+    <p>No results found.</p>
+}
+<Popup @ref=popup Lazy=true class="my-popup">
+    @if (SelectedRecord != null)
+    {<div class="mt-4 card p-3">
+        <h5>Full Metadata</h5>
+        <pre>@System.Text.Json.JsonSerializer.Serialize(SelectedRecord.Metadata, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })</pre>
+        <button class="btn btn-sm btn-outline-secondary mt-2" @onclick="() => {SelectedRecord = null;popup.CloseAsync();}">Close</button>
+    </div>}
+</Popup>
+
+
+
+@code {
+    private string SearchQuery { get; set; } = string.Empty;
+    //private string SelectedIndex { get; set; } = "dwg";
+    RadzenButton button;
+    Popup popup;
+    private bool SearchDwg { get; set; } = true;
+    private bool SearchPdf { get; set; } = true;
+
+    private bool IsSearching { get; set; } = false;
+    private bool HasSearched { get; set; } = false;
+
+    private List<SearchResult> Results { get; set; } = new();
+    private int CurrentPage { get; set; } = 1;
+    private int PageSize { get; set; } = 10;
+
+    private SearchResult? SelectedRecord { get; set; }
+
+    private IEnumerable<SearchResult> PagedResults =>
+        Results.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+
+    private int TotalPages => (int)Math.Ceiling((double)(Results?.Count ?? 0) / PageSize);
+    private bool CanPrev => CurrentPage > 1;
+    private bool CanNext => CurrentPage < TotalPages;
+
+    private ElasticsearchService es = null;
+    protected override async Task OnInitializedAsync()
+    {
+        var _ensureIndexExistsTask = await GetElasticsearchService(); // Ensure the service is initialized
+    }
+    public async Task<bool> GetElasticsearchService()
+    {
+        if (es == null)
+        {
+            es = await ElasticsearchService.GetAsync(uri: "http://localhost:9200", dwg_indexname: "dwg", pdf_indexname: "pdf");
+        }
+        if (es is null)
+        {
+            NotifService.Notify(NotificationSeverity.Error, "Elastic Server", "Elastic server not started or no indexes found!", duration: 8000, closeOnClick: true);
+            return false;
+        }
+        return true;
+    }
+    private async Task PerformSearch()
+    {
+        if (string.IsNullOrWhiteSpace(SearchQuery)) return;
+        string filename;
+        IsSearching = true;
+        HasSearched = true;
+        Results.Clear();
+        SelectedRecord = null;
+        CurrentPage = 1;
+
+        try
+        {
+            // 🔎 Call your search function
+            var results = await es.SearchArticlesAsync(SearchQuery, "pdf");
+            foreach (var hit in results.Hits)
+            {
+                string HtmlContent = "";
+                var doc = (Dictionary<string, object>)hit.Source;
+                var meta = (Dictionary<string, object>)doc["metadata"];
+                if (hit.Highlight.ContainsKey("file"))
+                    //HtmlContent = "<h4>File: " + hit.Highlight["file"].FirstOrDefault() + "</h4>";
+                    filename = hit.Highlight["file"].FirstOrDefault();
+                else
+                    filename = (string)doc["file"];
+                if (hit.Highlight.ContainsKey("content.value"))
+                    foreach (var highlight in hit.Highlight["content.value"])
+                    {
+                        HtmlContent += "\n" + highlight;
+                    }
+                if (hit.Highlight.ContainsKey("content"))
+                    foreach (var highlight in hit.Highlight["content"])
+                    {
+                        HtmlContent += "\n" + highlight;
+                    }
+
+
+                Results.Add(new SearchResult { Title = filename, Highlight = HtmlContent,Metadata=meta });
+
+
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Search failed");
+        }
+        finally
+        {
+            IsSearching = false;
+        }
+    }
+
+    private void PrevPage() => CurrentPage--;
+    private void NextPage() => CurrentPage++;
+
+    private void ShowFullRecord(SearchResult result)
+    {
+        SelectedRecord = result;
+        popup.ToggleAsync(button.Element);
+    }
+
+    // Mock type - adjust to your real search result structure
+    public class SearchResult
+    {
+        public string Title { get; set; }
+        public string file { get; set; }
+        public string HtmlContent { get; set; }
+        public string Highlight { get; set; }   // contains highlighted HTML snippet
+        public Dictionary<string,object> Metadata { get; set; }
+    }
+
+    // 🔹 Replace this with your actual Elasticsearch call
+   
+}
