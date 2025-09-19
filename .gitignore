@@ -352,3 +352,5 @@ MigrationBackup/
 /local
 /samples/local
 /samples/out
+/src/webtailsrun
+/src/webtailspublish
