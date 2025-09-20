@@ -47,7 +47,6 @@ The project uses [ACadSharp](https://github.com/DomCR/ACadSharp) for DWG file pa
 
 ## Screenshots / Usage Examples
 
-> *(Replace the placeholders with real screenshots when available)*
 
 ### Selecting a folder to index
 ![Folder Selection Screenshot](https://github.com/ostr1969/dwgTextReader/blob/master/src/webtail/doc/images/Index.PNG)
