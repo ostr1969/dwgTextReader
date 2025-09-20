@@ -37,7 +37,7 @@ The project uses [ACadSharp](https://github.com/DomCR/ACadSharp) for DWG file pa
 
 1. Start Elasticsearch.  
 2. Run the app.  
-3. Open a browser and navigate to:  
+3. Open a browser and navigate to:  (http://localhost:5000)
 4. Use the UI to:  
 - Select folders to index  
 - Wait for indexing to finish  
