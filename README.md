@@ -50,10 +50,11 @@ The project uses [ACadSharp](https://github.com/DomCR/ACadSharp) for DWG file pa
 > *(Replace the placeholders with real screenshots when available)*
 
 ### Selecting a folder to index
-![Folder Selection Screenshot](src/webtail/docs/images/Index.png)
+![Folder Selection Screenshot](src/webtail/doc/images/Index.png)
+
 
 ### Search interface with results
-![Search Results Screenshot](src/webtail/docs/images/Search.png)
+![Search Results Screenshot](src/webtail/doc/images/Search.png)
 
 
 
