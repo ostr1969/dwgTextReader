@@ -1,0 +1,84 @@
+﻿@using static webtail.Pages.EsSearch
+<div class="popup-wrapper" >
+   
+    <RadzenButton Text="Copy Filename" class="popup-button" Click="() => CopyText(Meta.Title)">
+
+    </RadzenButton>
+
+<div class="mt-4 card p-3 popup-content">
+    <h5>Full Metadata</h5>
+    <pre>@System.Text.Json.JsonSerializer.Serialize(Meta.Metadata, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })</pre>
+   
+</div>
+</div>
+
+
+@code {
+    [Parameter] public SearchResult Meta { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Inject]
+    private IJSRuntime JS { get; set; }
+    private async Task CopyText(string res)
+    {
+        await JS.InvokeVoidAsync("copyToClipboard", res);
+    }
+
+}
+
+<style>
+    .tooltip-button {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+        .tooltip-button .tooltip-text {
+            visibility: hidden;
+            background-color: #333;
+            color: #fff;
+            text-align: left;
+            border-radius: 4px;
+            padding: 6px;
+            position: absolute;
+            z-index: 100;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .tooltip-button:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+    .popup-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+    .popup-button {
+        cursor: pointer;
+    }
+
+    .popup-content {
+        display: none; /* hidden by default */
+        position: absolute;
+        bottom: 120%; /* show above the button */
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #333;
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 6px;
+        z-index: 100;
+        white-space: nowrap;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    /* Show popup only when hovering button (or wrapper) */
+    .popup-wrapper:hover .popup-content {
+        display: block;
+    }
+</style>

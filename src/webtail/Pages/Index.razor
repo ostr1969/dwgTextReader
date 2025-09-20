@@ -15,9 +15,16 @@
 
         <h4 class="mt-4">Usage</h4>
         <ol>
-            <li>Go to the  <NavLink class="fw-bold" href="/filecrawler">File Crawler</NavLink>  tab and add a list of folders to search in.</li>
+            <li>Start Elasticsearch by going to thirdparty folder and pressing <b>"start_elastic"</b> </li>
+            <li>You can check if elastic started by  <NavLink class="fw-bold" href="http://localhost:9200">Press Here...</NavLink></li>
+            <li>Go to the  <NavLink class="fw-bold" href="/filecrawler">File Crawler</NavLink>  tab and add a list of folders to search in (semicolon seperated).</li>
             <li>Press <strong>Start Crawling</strong>. All files in those folders will be indexed.</li>
             <li>While indexing, you can start searching on the  <NavLink class="fw-bold" href="/search">Search Page</NavLink> .</li>
+            <p></p>
+            <li>You can see the indexed data on elastic by <NavLink class="fw-bold" href="http://localhost:9200/pdf/_search">pdf</NavLink>,
+                <NavLink class="fw-bold" href="http://localhost:9200/dwg/_search">dwg</NavLink>,<NavLink class="fw-bold" href="http://localhost:9200/other/_search">other</NavLink>
+            </li>
+            <li>You can define initial words to find in <strong>appsetings.json</strong></li>
         </ol>
 
         <h4 class="mt-4">Requirements</h4>

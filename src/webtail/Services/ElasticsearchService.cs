@@ -131,20 +131,20 @@ namespace webtail.Models
 			Console.WriteLine($"Indexed: {txt.file}");
 		}
 
-		public async Task<ISearchResponse<object>> SearchArticlesAsync(string keyword,string index)
+		public async Task<ISearchResponse<object>> SearchArticlesAsync(string keyword,string index, Operator op)
 		{
 			var searchResponse = client.Search<object>(s => s.Index(index)
 	.Query(q => q
 		.MultiMatch(m => m
-		.Query(keyword) // Text to search for within the array elements
+		.Query(keyword).Operator(op) // Text to search for within the array elements
 			.Fields(f=>f
-			.Field("content.value").Field("file").Field("content")
+			.Field("file").Field("content")
 
 		)))
 	.Highlight(k=> k.PreTags("<mark>").PostTags("</mark>").MaxAnalyzedOffset(10000)
 		.Fields(
 			hf => hf.Field("file"),
-			hf => hf.Field("content.value"),
+			
 			hf => hf.Field("content")
 		))
 		.Size(100) // Limit the number of results returned
