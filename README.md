@@ -1,4 +1,4 @@
-# Blazor File Indexer [WebTails](https://github.com/ostr1969/dwgTextReader/tree/master/src/webtail)
+# Blazor File Indexer -  [WebTails](https://github.com/ostr1969/dwgTextReader/tree/master/src/webtail)
 
 This is a **Blazor Server** application that allows you to:
 
@@ -50,13 +50,12 @@ The project uses [ACadSharp](https://github.com/DomCR/ACadSharp) for DWG file pa
 > *(Replace the placeholders with real screenshots when available)*
 
 ### Selecting a folder to index
-![Folder Selection Screenshot](docs/images/folder-selection.png)
+![Folder Selection Screenshot](src/webtail/docs/images/Index.png)
 
 ### Search interface with results
-![Search Results Screenshot](docs/images/search-results.png)
+![Search Results Screenshot](src/webtail/docs/images/Search.png)
 
-### Highlighted search terms in context
-![Highlighted Text Screenshot](docs/images/highlighted-text.png)
+
 
 ---
 
