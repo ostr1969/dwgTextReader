@@ -38,3 +38,5 @@ foreach (var address in app.Urls)
 }
 
 app.Run();
+
+//dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile = true - o.\published

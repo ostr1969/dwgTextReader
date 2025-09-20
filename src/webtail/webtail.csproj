@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="doc\images\" />
     <Folder Include="Resources\" />
     <Folder Include="Services\" />
   </ItemGroup>
