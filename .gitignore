@@ -354,3 +354,5 @@ MigrationBackup/
 /samples/out
 /src/webtailsrun
 /src/webtailspublish
+/src/webtail/Resources/elasticsearch-8.11.1
+/src/webtail/thirdparty
