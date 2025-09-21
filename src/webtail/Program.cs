@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddControllers();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddRadzenComponents();
 builder.Services.AddSingleton<FileService>();
@@ -17,6 +18,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.Configure<CrawlerOptions>(builder.Configuration.GetSection("Crawler"));
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+builder.Services.AddSingleton<FileService>(); // handles random file creation
 //builder.WebHost.UseUrls("http://localhost:5000");
 var app = builder.Build();
 
@@ -32,6 +34,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.MapBlazorHub();
+app.MapControllers(); // <-- This enables your FileController endpoints
 app.MapFallbackToPage("/_Host");
 Console.WriteLine("WEBTAILS indexer Server started:");
 foreach (var address in app.Urls)
@@ -40,5 +43,6 @@ foreach (var address in app.Urls)
 }
 
 app.Run();
+
 
 //dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile = true - o.\published

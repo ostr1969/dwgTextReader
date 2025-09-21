@@ -45,8 +45,8 @@
 <h3><img src="images/glasses-48.png" style="margin-right: 30px;" />Elastic Search</h3>
 
 <div class="search-bar" style="display:flex; align-items:center; gap:10px;">
-    <input type="text" @bind="SearchQuery" placeholder="Enter search text..." class="form-control" />
-    <button class="btn btn-primary" @onclick="PerformSearch">Search</button>
+    <input type="text" @bind="SearchQuery" placeholder="Enter search text..." class="form-control" @onkeydown="HandleKeyDown" @bind:event="oninput" />
+    <button class="btn btn-primary" @onclick="PerformSearch" >Search</button>
    <div>
         <RadzenRadioButtonList @bind-Value=@selectedOperator TValue="int">
             <Items>
@@ -105,7 +105,7 @@ else if (Results?.Any() == true)
                 <div class="rz-p-2 align-content-lg-start" >
                     
                     <ResultTooltip Meta=result>
-                         <button>@result.Title</button>
+                        
                      </ResultTooltip>
                    
                 </div>
@@ -123,14 +123,14 @@ else if (HasSearched)
 {
     <p>No results found.</p>
 }
-<Popup @ref=popup Lazy=true class="my-popup">
+@* <Popup @ref=popup Lazy=true class="my-popup">
     @if (SelectedRecord != null)
     {<div class="mt-4 card p-3">
         <h5>Full Metadata</h5>
         <pre>@System.Text.Json.JsonSerializer.Serialize(SelectedRecord.Metadata, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })</pre>
         <button class="btn btn-sm btn-outline-secondary mt-2" @onclick="() => {SelectedRecord = null;popup.CloseAsync();}">Close</button>
     </div>}
-</Popup>
+</Popup> *@
 
 
 
@@ -202,6 +202,13 @@ else if (HasSearched)
             return false;
         }
         return true;
+    }
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+           await PerformSearch();
+        }
     }
     private async Task PerformSearch()
     {

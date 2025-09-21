@@ -15,7 +15,7 @@
    
 </div>
 </div>
-<RadzenButton Text="Open"  Click="() => OpenRandomFile(Meta)" />
+<RadzenButton Text="Open/Download"  Click="() => OpenFile(Meta.file)" />
 
 
 @code {
@@ -27,15 +27,14 @@
     {
         await JS.InvokeVoidAsync("copyToClipboard", res);
     }
-    async Task OpenRandomFile(SearchResult file)
+    async Task OpenFile(string fileName)
     {
-        // Call server method to create file
-        
-        var randomFile = await FileService.CreateRandomFileAsync(file.file);
+        // Optional: copy to random name
+        var randomFile = await FileService.CreateRandomFileAsync(fileName);
 
-        // Navigate to it
-       // Navigation.NavigateTo($"/files/{randomFile}", forceLoad: true);
-        JS.InvokeVoidAsync("open", $"/files/{randomFile}", "_blank"); // opens in new tab
+        // Open in new tab; PDF/images inline, others download
+        var url = $"/files/{randomFile}";
+        await JS.InvokeVoidAsync("open", url, "_blank");
     }
 
 }
