@@ -357,3 +357,4 @@ MigrationBackup/
 /src/webtail/Resources/elasticsearch-8.11.1
 /src/webtail/thirdparty
 /src/webtail/published
+/src/webtail/wwwroot/files
