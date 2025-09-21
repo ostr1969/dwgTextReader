@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Radzen;
 using webtail.Data;
 using webtail.Models;
+using webtail.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,11 +11,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddRadzenComponents();
-
+builder.Services.AddSingleton<FileService>();
 builder.Services.AddRazorComponents()
 	.AddInteractiveServerComponents();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.Configure<CrawlerOptions>(builder.Configuration.GetSection("Crawler"));
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 //builder.WebHost.UseUrls("http://localhost:5000");
 var app = builder.Build();
 

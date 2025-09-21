@@ -7,9 +7,14 @@
 @inject Microsoft.Extensions.Options.IOptions<CrawlerOptions> Options
 @inject NotificationService NotifService;
 <RadzenNotification />
-<PageTitle>Indexer</PageTitle>
-<h3>File Crawler</h3>
 
+<HeadContent>
+    <PageTitle>Crawler</PageTitle>
+    <link rel="icon" type="image/png" href="images/crawler-48.png" />
+</HeadContent>
+
+
+<h3><img src="images/crawler-48.png" style="margin-right: 30px;" />File Crawler</h3>
 <div class="mb-3">
     <label>Folder Paths (seperate by semicolon):</label>
     <input type="text" class="form-control" @bind="folderPath" />

@@ -35,9 +35,14 @@
             opacity: 1;
         }
 </style>
-<PageTitle>Es Search</PageTitle>
 
-<h3>Article Search</h3>
+<HeadContent>
+   
+<PageTitle >Es Search</PageTitle>
+    <link rel="icon" type="image/png" href="images/glasses-48.png" />
+</HeadContent>
+
+<h3><img src="images/glasses-48.png" style="margin-right: 30px;" />Elastic Search</h3>
 
 <div class="search-bar" style="display:flex; align-items:center; gap:10px;">
     <input type="text" @bind="SearchQuery" placeholder="Enter search text..." class="form-control" />
@@ -189,7 +194,7 @@ else if (HasSearched)
     {
         if (es == null)
         {
-            es = await ElasticsearchService.GetAsync(uri: "http://localhost:9200", dwg_indexname: "dwg", pdf_indexname: "pdf");
+            es = await ElasticsearchService.GetAsync(uri: CrawlerOptions.Value.ElasticsearchUri, dwg_indexname: "dwg", pdf_indexname: "pdf");
         }
         if (es is null)
         {
@@ -201,7 +206,7 @@ else if (HasSearched)
     private async Task PerformSearch()
     {
         if (string.IsNullOrWhiteSpace(SearchQuery)) return;
-        string filename;
+        string filename,highlightFn;
         IsSearching = true;
         HasSearched = true;
         Results.Clear();
@@ -227,11 +232,12 @@ else if (HasSearched)
                 string HtmlContent = "";
                 var doc = (Dictionary<string, object>)hit.Source;
                 var meta = (Dictionary<string, object>)doc["metadata"];
+                    filename = (string)doc["file"];
                 if (hit.Highlight.ContainsKey("file"))
                     //HtmlContent = "<h4>File: " + hit.Highlight["file"].FirstOrDefault() + "</h4>";
-                    filename = hit.Highlight["file"].FirstOrDefault();
+                    highlightFn = hit.Highlight["file"].FirstOrDefault();
                 else
-                    filename = (string)doc["file"];
+                    highlightFn = filename;
                 // if (hit.Highlight.ContainsKey("content.value"))
                 //     foreach (var highlight in hit.Highlight["content.value"])
                 //     {
@@ -244,7 +250,7 @@ else if (HasSearched)
                     }
 
 
-                Results.Add(new SearchResult { Title = filename, Highlight = HtmlContent,Metadata=meta });
+                Results.Add(new SearchResult { Title = highlightFn, Highlight = HtmlContent,Metadata=meta,file=filename });
 
 
             }}

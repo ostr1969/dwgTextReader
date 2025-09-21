@@ -6,12 +6,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
 	  <NeutralResourcesLanguage>en</NeutralResourcesLanguage>
 	  <SatelliteResourceLanguages></SatelliteResourceLanguages>
+	  <ApplicationIcon>doc\images\Web-Tailsnotxt.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="doc\images\" />
     <Folder Include="Resources\" />
-    <Folder Include="Services\" />
+    <Folder Include="wwwroot\files\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,6 +27,10 @@
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 	  </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\images\Web-Tails32X32.png" />
   </ItemGroup>
 
 </Project>

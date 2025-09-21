@@ -1,9 +1,13 @@
-﻿@using static webtail.Pages.EsSearch
+﻿@using webtail.Services
+@using static webtail.Pages.EsSearch
+@inject FileService FileService
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor HttpContextAccessor
 <div class="popup-wrapper" >
    
-    <RadzenButton Text="Copy Filename" class="popup-button" Click="() => CopyText(Meta.Title)">
-
-    </RadzenButton>
+    <RadzenButton Text="Copy Filename" class="popup-button" Click="() => CopyText(Meta.Title)" />
+   
+ 
 
 <div class="mt-4 card p-3 popup-content">
     <h5>Full Metadata</h5>
@@ -11,6 +15,7 @@
    
 </div>
 </div>
+<RadzenButton Text="Open"  Click="() => OpenRandomFile(Meta)" />
 
 
 @code {
@@ -21,6 +26,16 @@
     private async Task CopyText(string res)
     {
         await JS.InvokeVoidAsync("copyToClipboard", res);
+    }
+    async Task OpenRandomFile(SearchResult file)
+    {
+        // Call server method to create file
+        
+        var randomFile = await FileService.CreateRandomFileAsync(file.file);
+
+        // Navigate to it
+       // Navigation.NavigateTo($"/files/{randomFile}", forceLoad: true);
+        JS.InvokeVoidAsync("open", $"/files/{randomFile}", "_blank"); // opens in new tab
     }
 
 }
