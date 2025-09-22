@@ -33,4 +33,10 @@
     <None Include="wwwroot\images\Web-Tails32X32.png" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Resources\rev_list.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

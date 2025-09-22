@@ -75,10 +75,10 @@ namespace webtail.Models
 		public DwgParser(string filename, CrawlerOptions options)
 		{
 			string baseDir = AppContext.BaseDirectory;
-			string frogfile = Path.Combine(baseDir, "Resources", "frog_list.csv");
+			//string frogfile = Path.Combine(baseDir, "Resources", "frog_list.csv");
 			string revfile = Path.Combine(baseDir, "Resources", "rev_list.csv");
 			string encodefile = Path.Combine(baseDir, "Resources", "encode_list.csv");
-			frog_styles = System.IO.File.ReadLines(frogfile).First().Split(",").Select(item => item.Trim()).ToList();
+			//frog_styles = System.IO.File.ReadLines(frogfile).First().Split(",").Select(item => item.Trim()).ToList();
 			rev_styles = System.IO.File.ReadLines(revfile).First().Split(",").Select(item => item.Trim()).ToList();
 			encode_styles = System.IO.File.ReadLines(encodefile).First().Split(",").Select(item => item.Trim()).ToList();
 			crawlerOptions = options;
@@ -99,10 +99,10 @@ namespace webtail.Models
 		public  DwgParser(ArgStorage arguments,CrawlerOptions options)
 		{
 			string baseDir = AppContext.BaseDirectory;
-			string frogfile = Path.Combine(baseDir, "Resources", "frog_list.csv");
+			//string frogfile = Path.Combine(baseDir, "Resources", "frog_list.csv");
 			string revfile = Path.Combine(baseDir, "Resources", "rev_list.csv");
 			string encodefile = Path.Combine(baseDir, "Resources", "encode_list.csv");
-			frog_styles = System.IO.File.ReadLines(frogfile).First().Split(",").Select(item => item.Trim()).ToList();
+			//frog_styles = System.IO.File.ReadLines(frogfile).First().Split(",").Select(item => item.Trim()).ToList();
 			rev_styles = System.IO.File.ReadLines(revfile).First().Split(",").Select(item => item.Trim()).ToList();
 			encode_styles = System.IO.File.ReadLines(encodefile).First().Split(",").Select(item => item.Trim()).ToList();
 
@@ -317,15 +317,18 @@ namespace webtail.Models
 					//tval = txtdecode(om);
 					lay = om.Layer.Name;
 					ConditionalWrite($"{id++}{pre}mtext({style}): {tvalr}",isWrite);
-					esStorageContent.Add(new JObject
-					{
-						["type"] = "mtext",
-						["style"] = style.Replace("#",""),
-						["value"] = tval,
-						["layer"] = lay,
-						["block"] = ownerName
-					});
-					dwgTexts.Add(new DwgText { block=ownerName,type="mtext",style= style.Replace("#", ""), value=tval,layer=lay});
+					
+						esStorageContent.Add(new JObject
+						{
+							["type"] = "mtext",
+							["style"] = style.Replace("#", ""),
+							["value"] = tval,
+							["valuerev"] = tvalr,
+							["layer"] = lay,
+							["block"] = ownerName
+						});
+					
+					dwgTexts.Add(new DwgText { block=ownerName,type="mtext",style= style.Replace("#", ""), value=tval,layer=lay, valuerev = tvalr });
 				}
 
 				if (o is ACadSharp.Entities.AttributeDefinition oa)
@@ -347,16 +350,19 @@ namespace webtail.Models
 
 					lay = oa.Layer.Name;
 					ConditionalWrite($"{id++}{pre}att({style}): {prompt.Item2}={tvalr}", isWrite);
-					esStorageContent.Add(new JObject
-					{
-						["type"] = "att",
-						["style"] = style.Replace("#", ""),
-						["value"] = tval,
-						["prompt"] = prompt.Item1,
-						["layer"] = lay,
-						["block"] = ownerName
-					});
-					dwgTexts.Add(new DwgText { block = ownerName, type = "att", style = style.Replace("#", ""), value = tval, layer = lay,prompt=prompt.Item1 });
+					
+						esStorageContent.Add(new JObject
+						{
+							["type"] = "att",
+							["style"] = style.Replace("#", ""),
+							["value"] = tval,
+							["valuerev"] = tvalr,
+							["prompt"]=prompt.Item1,
+							["layer"] = lay,
+							["block"] = ownerName
+						});
+					
+					dwgTexts.Add(new DwgText { block = ownerName, type = "att", style = style.Replace("#", ""), value = tval, layer = lay,prompt=prompt.Item1,valuerev= tvalr });
 					continue;
 				}
 				if (o is ACadSharp.Entities.TextEntity ot)
@@ -373,15 +379,18 @@ namespace webtail.Models
 					lay = ot.Layer.Name;
 					
 					ConditionalWrite($"{id++}{pre}text({style}): {tvalr}", isWrite);
+					
 					esStorageContent.Add(new JObject
 					{
 						["type"] = "text",
 						["style"] = style.Replace("#", ""),
 						["value"] = tval,
+						["valuerev"] = tvalr,
 						["layer"] = lay,
 						["block"] = ownerName
 					});
-					dwgTexts.Add(new DwgText { block = ownerName, type = "text", style = style.Replace("#", ""), value = tval, layer = lay });
+					
+					dwgTexts.Add(new DwgText { block = ownerName, type = "text", style = style.Replace("#", ""), value = tval, layer = lay,valuerev=tvalr });
 				}
 				if (o is ACadSharp.Entities.Insert oi)
 				{
@@ -394,28 +403,32 @@ namespace webtail.Models
 		
 		public (string,string) txtdecode(ACadSharp.Entities.TextEntity ot,string txt)
 		{
-			string tval;
+			string tval, tvalReversed;
 			
 
 					
 
 			List<string> style2decode = encode_styles.Select(o=>o.ToLower()).ToList();
-			List<string> style2frog = frog_styles;
+			//List<string> style2frog = frog_styles;
 			List<string> style2rev = rev_styles.Select(o => o.ToLower()).ToList();
 			if (style2decode.Contains( ot.Style.Name.ToLower()) )			
-				tval = txt.GibrishIterator();									
-			else
-				tval = txt;
-			string tvalReversed = tval;
-			if (style2rev.Contains(ot.Style.Name.ToLower()))
+				{tval = txt.GibrishIterator();
 				tvalReversed = tval.Rev();
+			}
+			else
+				{tval = txt;
+				tvalReversed = tval;
+			}
+			//string tvalReversed = tval;
+			//if (style2rev.Contains(ot.Style.Name.ToLower()))
+			
 			return (tval,tvalReversed);
 		}
 		public (string, string) txtdecode(ACadSharp.Entities.MText ot,string txt)
 		{
 			string tval;
 			List<string> style2decode = encode_styles.Select(o => o.ToLower()).ToList();
-			List<string> style2frog = frog_styles;
+			//List<string> style2frog = frog_styles;
 			List<string> style2rev = rev_styles.Select(o => o.ToLower()).ToList();
 			if (style2decode.Contains(ot.Style.Name.ToLower()))			
 				tval = txt.GibrishIterator();

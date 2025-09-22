@@ -4,6 +4,7 @@ using Radzen;
 using webtail.Data;
 using webtail.Models;
 using webtail.Services;
+using static webtail.Pages.EsSearch;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.Configure<CrawlerOptions>(builder.Configuration.GetSection("Crawler"));
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+builder.Services.AddSingleton<ResultState>();
 builder.Services.AddSingleton<FileService>(); // handles random file creation
 //builder.WebHost.UseUrls("http://localhost:5000");
 var app = builder.Build();

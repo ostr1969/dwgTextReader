@@ -104,7 +104,7 @@ else if (Results?.Any() == true)
                
                 <div class="rz-p-2 align-content-lg-start" >
                     
-                    <ResultTooltip Meta=result>
+                    <ResultTooltip Result=result>
                         
                      </ResultTooltip>
                    
@@ -207,7 +207,7 @@ else if (HasSearched)
     {
         if (e.Key == "Enter")
         {
-           await PerformSearch();
+            await PerformSearch();
         }
     }
     private async Task PerformSearch()
@@ -233,12 +233,15 @@ else if (HasSearched)
         {
             foreach (var ind in indtosearch)
             // 🔎 Call your search function
-           { var results = await es.SearchArticlesAsync(SearchQuery, ind,op);
-            foreach (var hit in results.Hits)
-            {
-                string HtmlContent = "";
-                var doc = (Dictionary<string, object>)hit.Source;
-                var meta = (Dictionary<string, object>)doc["metadata"];
+            { var results = await es.SearchArticlesAsync(SearchQuery, ind,op);
+                foreach (var hit in results.Hits)
+                {
+                    string HtmlContent = "",contentrev="";
+                    var doc = (Dictionary<string, object>)hit.Source;
+                    var content =(string) doc["content"];
+                    if(doc.ContainsKey("contentrev"))
+                        contentrev =(string) doc["contentrev"];
+                    var meta = (Dictionary<string, object>)doc["metadata"];
                     filename = (string)doc["file"];
                 if (hit.Highlight.ContainsKey("file"))
                     //HtmlContent = "<h4>File: " + hit.Highlight["file"].FirstOrDefault() + "</h4>";
@@ -255,9 +258,14 @@ else if (HasSearched)
                     {
                         HtmlContent += "\n" + highlight;
                     }
+                if (hit.Highlight.ContainsKey("contentrev"))
+                    foreach (var highlight in hit.Highlight["contentrev"])
+                    {
+                        HtmlContent += "\n" + highlight;
+                    }
 
 
-                Results.Add(new SearchResult { Title = highlightFn, Highlight = HtmlContent,Metadata=meta,file=filename });
+                Results.Add(new SearchResult { Title = highlightFn, Highlight = HtmlContent,Metadata=meta,file=filename,Content=content,ContentRev=contentrev });
 
 
             }}
@@ -285,12 +293,17 @@ else if (HasSearched)
     public class SearchResult
     {
         public string Title { get; set; }
+        public string Content { get; set; }
+        public string ContentRev { get; set; }
         public string file { get; set; }
         public string HtmlContent { get; set; }
         public string Highlight { get; set; }   // contains highlighted HTML snippet
         public Dictionary<string,object> Metadata { get; set; }
     }
-
+    public class ResultState
+    {
+        public SearchResult CurrentResult { get; set; }
+    }
     // 🔹 Replace this with your actual Elasticsearch call
    
 }

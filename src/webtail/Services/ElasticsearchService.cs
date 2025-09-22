@@ -138,17 +138,18 @@ namespace webtail.Models
 		.MultiMatch(m => m
 		.Query(keyword).Operator(op) // Text to search for within the array elements
 			.Fields(f=>f
-			.Field("file").Field("content")
+			.Field("file").Field("content").Field("contentrev")
 
 		)))
 	.Highlight(k=> k.PreTags("<mark>").PostTags("</mark>").MaxAnalyzedOffset(10000)
 		.Fields(
 			hf => hf.Field("file"),
 			
-			hf => hf.Field("content")
+			hf => hf.Field("content"),
+			hf => hf.Field("contentrev")
 		))
 		.Size(100) // Limit the number of results returned
-		.Source(src => src.Includes(i => i.Field("content.value").Field("file").Field("id").Field("content").Field("metadata")))
+		.Source(src => src.Includes(i => i.Field("contentrev").Field("file").Field("id").Field("content").Field("metadata")))
 // Include only the 'content', 'file',  fields in the response
 // Adjust the fields as necessary based on your requirements
 // Note: The 'content' field is an array, so it will return all matching elements

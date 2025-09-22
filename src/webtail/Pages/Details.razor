@@ -1,0 +1,38 @@
+﻿@page "/details"
+@using static webtail.Pages.EsSearch
+
+@inject ResultState State
+<style>
+    .wrapped-pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        max-width: 100%;
+    }
+</style>
+<h3>Details for @State.CurrentResult.file</h3>
+
+@if (State.CurrentResult != null)
+{
+    <h5>Full Metadata</h5>
+    <pre class="wrapped-pre">@System.Text.Json.JsonSerializer.Serialize(State.CurrentResult.Metadata, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })</pre>
+
+    
+    <RadzenButton Click="() => ToggleContent()">@(showContent ? "Hide Content" : "Show Content")</RadzenButton>
+
+    @if (showContent)
+    {
+        <h3>Content</h3>
+        <pre class="wrapped-pre">@State.CurrentResult.Content</pre>
+        <h3>Content reversed</h3>
+        <pre class="wrapped-pre">@State.CurrentResult.ContentRev</pre>
+    }
+}
+else
+{
+    <p>No record selected.</p>
+}
+
+@code {
+    private bool showContent;
+    void ToggleContent() => showContent = !showContent;
+}

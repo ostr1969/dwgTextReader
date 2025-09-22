@@ -6,6 +6,7 @@
 @using System.Text
 @inject Microsoft.Extensions.Options.IOptions<CrawlerOptions> Options
 @inject NotificationService NotifService;
+@inject NavigationManager Nav
 <RadzenNotification />
 
 <HeadContent>
@@ -97,6 +98,7 @@
         es.deleteIndex("other");
         es = null;
         extensionStats = new();
+        Nav.NavigateTo(Nav.Uri, forceLoad: true);
     }
 
     public bool CheckFolders()

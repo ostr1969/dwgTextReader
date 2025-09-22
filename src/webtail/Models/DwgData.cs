@@ -12,6 +12,7 @@ namespace webtail.Models
 		public List<DwgText> contentaslist { get; set; }
 		public CadSummaryInfo metadata { get; set; }
 		public string content { get; set; }
+		public string contentrev { get; set; }
 
 		public static DwgData FromParser(DwgParser parser)
 		{
@@ -22,12 +23,21 @@ namespace webtail.Models
 			container.contentaslist = parser.dwgTexts;
 			container.metadata = parser.CadSummaryInfo;
 			StringBuilder sb = new StringBuilder();
+			StringBuilder sbrev = new StringBuilder();
 			foreach (var obj in parser.dwgTexts)
 			{
-				sb.Append(obj.prompt); sb.Append(' ');
-				sb.Append(obj.value); sb.Append(' ');
+				if (obj.prompt?.Length>1)
+				{sb.Append(obj.prompt); sb.Append(' '); }
+				if (obj.value.Length > 1)
+					{sb.Append(obj.value); sb.Append(' '); }
+				if (obj.value?.Length > 1 && obj.value!=obj.valuerev)
+					{sbrev.Append(obj.valuerev); sbrev.Append(' '); }
+				if (obj.prompt?.Length > 1 && obj.value != obj.valuerev)
+					{sbrev.Append(obj.prompt.Rev()); sbrev.Append(' '); }
+
 			}
 			container.content = sb.ToString();
+			container.contentrev = sbrev.ToString();
 			return container;
 		}
 		public static DwgData FromJObject(Newtonsoft.Json.Linq.JObject jObject)
@@ -37,6 +47,7 @@ namespace webtail.Models
 			container.textstyles = new List<string>();
 			container.contentaslist = new List<DwgText>();
 			StringBuilder sb = new StringBuilder();
+			StringBuilder sbrev = new StringBuilder();
 
 			container.id = jObject["id"]?.ToString();
 			container.file = jObject["file"]?.ToString();
@@ -66,6 +77,7 @@ namespace webtail.Models
 					{
 						type = item["type"]?.ToString(),
 						value = item["value"]?.ToString(),
+						valuerev = item["valuerev"]?.ToString(),
 						layer = item["layer"]?.ToString(),
 						style = item["style"]?.ToString(),
 						prompt = item["prompt"]?.ToString(),
@@ -75,6 +87,9 @@ namespace webtail.Models
 					container.contentaslist.Add(obj);
 					sb.Append(obj.prompt); sb.Append(' ');
 					sb.Append(obj.value); sb.Append(' ');
+
+					sbrev.Append(obj.prompt); sb.Append(' ');
+					sbrev.Append(obj.value); sb.Append(' ');
 				}
 			}
 			container.content = sb.ToString();

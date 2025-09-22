@@ -2,24 +2,26 @@
 @using static webtail.Pages.EsSearch
 @inject FileService FileService
 @inject NavigationManager Navigation
+@inject ResultState State
 @inject IHttpContextAccessor HttpContextAccessor
 <div class="popup-wrapper" >
    
-    <RadzenButton Text="Copy Filename" class="popup-button" Click="() => CopyText(Meta.Title)" />
+    <RadzenButton Text="Copy Filename" class="popup-button" Click="() => CopyText(Result.Title)" />
    
  
 
 <div class="mt-4 card p-3 popup-content">
     <h5>Full Metadata</h5>
-    <pre>@System.Text.Json.JsonSerializer.Serialize(Meta.Metadata, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })</pre>
-   
+    <pre>@System.Text.Json.JsonSerializer.Serialize(Result.Metadata, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })</pre>
+       
 </div>
 </div>
-<RadzenButton Text="Open/Download"  Click="() => OpenFile(Meta.file)" />
+<RadzenButton Text="Open/Download"  Click="() => OpenFile(Result.file)" />
+<RadzenButton Text="Full Details" Click="() => OpenDetails(Result)" />
 
 
 @code {
-    [Parameter] public SearchResult Meta { get; set; }
+    [Parameter] public SearchResult Result { get; set; }
     [Parameter] public RenderFragment ChildContent { get; set; }
     [Inject]
     private IJSRuntime JS { get; set; }
@@ -35,6 +37,12 @@
         // Open in new tab; PDF/images inline, others download
         var url = $"/files/{randomFile}";
         await JS.InvokeVoidAsync("open", url, "_blank");
+    }
+    void OpenDetails(SearchResult result)
+    {
+        State.CurrentResult = result;   // store in shared state
+       // Navigation.NavigateTo("/details");
+        JS.InvokeVoidAsync("open", "/details", "_blank"); // open details page in new tab
     }
 
 }
