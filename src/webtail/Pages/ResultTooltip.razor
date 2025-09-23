@@ -6,7 +6,7 @@
 @inject IHttpContextAccessor HttpContextAccessor
 <div class="popup-wrapper" >
    
-    <RadzenButton Text="Copy Filename" class="popup-button" Click="() => CopyText(Result.Title)" />
+    <RadzenButton Text="Copy Filename" class="popup-button" Click="() => CopyText(Result.Title)" Variant="Variant.Outlined" />
    
  
 
@@ -16,8 +16,9 @@
        
 </div>
 </div>
-<RadzenButton Text="Open/Download"  Click="() => OpenFile(Result.file)" />
-<RadzenButton Text="Full Details" Click="() => OpenDetails(Result)" />
+<RadzenButton Text="Open/Download" Click="() => OpenFile(Result.file)" ButtonStyle="ButtonStyle.Success" Variant="Variant.Outlined" />
+<RadzenButton Text="Full Details" Click="() => OpenDetails(Result)" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined" />
+
 
 
 @code {
