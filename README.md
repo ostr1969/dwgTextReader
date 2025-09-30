@@ -24,7 +24,8 @@ The project uses [ACadSharp](https://github.com/DomCR/ACadSharp) for DWG file pa
 ## Configuration
 
 1. **Modify `appsettings.json`**  
-   - Update the `"Words"` section to adjust the predefined list of words used in searches.  
+   - Update the `"Words"` section to adjust the predefined list of words used in searches.
+   - Update the initial folder or folders to search in  
 
 2. **Fonts and Parsing Config**  
    - The project includes a `References` folder containing:  
@@ -39,7 +40,7 @@ The project uses [ACadSharp](https://github.com/DomCR/ACadSharp) for DWG file pa
 2. Run the app.  
 3. Open a browser and navigate to:  (http://localhost:5000)
 4. Use the UI to:  
-- Select folders to index  
+- Select folders to index  (can also reselect previously indexed folder from a list)
 - Wait for indexing to finish  
 - Perform searches (results will show your search words highlighted)
 
