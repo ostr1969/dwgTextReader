@@ -47,7 +47,8 @@ The project uses [ACadSharp](https://github.com/DomCR/ACadSharp) for DWG file pa
 
 ## Limitations
 
-The Crawler do not perform ocr
+The Crawler do not perform ocr.
+
 ---
 
 ## Screenshots / Usage Examples
