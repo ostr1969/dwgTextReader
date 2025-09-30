@@ -1,4 +1,4 @@
-# Blazor File Indexer -  [WebTails](https://github.com/ostr1969/dwgTextReader/tree/master/src/webtail)
+# Blazor File Indexer -  [WebTails](https://github.com/ostr1969/dwgTextReader/tree/master/src/webtail)(https://github.com/ostr1969/dwgTextReader/blob/master/src/webtail/doc/images/Web-Tails32X32.png)
 
 This is a **Blazor Server** application that allows you to:
 
