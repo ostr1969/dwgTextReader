@@ -25,7 +25,8 @@ The project uses [ACadSharp](https://github.com/DomCR/ACadSharp) for DWG file pa
 
 1. **Modify `appsettings.json`**  
    - Update the `"Words"` section to adjust the predefined list of words used in searches.
-   - Update the initial folder or folders to search in  
+   - Update the initial folder or folders to search in
+   - Update elasticsearch uri 
 
 2. **Fonts and Parsing Config**  
    - The project includes a `References` folder containing:  
@@ -64,6 +65,9 @@ The Crawler do not perform ocr.
 
 
 ---
+
+## License
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/ostr1969/dwgTextReader/blob/master/LICENSE) file for details.
 
 ## Publishing
 
