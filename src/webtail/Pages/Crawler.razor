@@ -18,8 +18,8 @@
 <h3><img src="images/crawler-48.png" style="margin-right: 30px;" />File Crawler</h3>
 <div class="mb-3">
     <label>Folder Paths (seperate by semicolon):</label>
-    <input type="text" class="form-control" @bind="folderPath" />
-    @if (!string.IsNullOrEmpty(folderPath) && !CheckFolders())
+    <input type="text" class="form-control" @bind="PathsToIndexAsString" />
+    @if (!string.IsNullOrEmpty(PathsToIndexAsString) && !CheckFolders())
     {
         <div class="text-danger">⚠️ The path does not exist.</div>
     }
@@ -27,16 +27,32 @@
 
 
 <RadzenButton Text="Start Crawling" Click="async () => await StartCrawling()" Icon="find_in_page" Style="margin-right:10px;"
-              Disabled="@(string.IsNullOrEmpty(folderPath) || es is  null)" />
+              Disabled="@(string.IsNullOrEmpty(PathsToIndexAsString) || es is  null)" />
 <RadzenButton Text="Clear ES" Click=@deleteIndexs Icon="delete_forever" Style="margin-right:10px;" IconColor="@Colors.Danger"
               Disabled="@( es is  null)" />
+@if(PathsInEs.Count>0)
+{<h5 class="mt-3">Paths allready in Elastic:</h5>
+<div class=" rz-text-align-left">
+    <RadzenListBox @bind-Value=@selectedPath Data=@PathsInEs Style="width: 100%; max-width: 400px; "  />
+    <RadzenButton Text="Add selected" Click="addToSearchPath" Icon="note_add" Style="margin-right:10px;"
+                  Disabled="@(PathsInEs.Count==0 || es is  null)" />
+    <RadzenButton Text="Add All" Click="addAllToSearchPath" Icon="note_add" Style="margin-right:10px;"
+                  Disabled="@(PathsInEs.Count==0 || es is  null)" />
+    <RadzenButton Text="Replace All" Click="replaceSearchPath" Icon="note_add" Style="margin-right:10px;"
+                  Disabled="@(PathsInEs.Count==0 || es is  null)" />
+</div>}
 <RadzenStack Gap="1rem" class="rz-m-12">
-    <RadzenProgressBar Value=@totalFilesCounter Max=@totalFiles Unit=@pgunit />
+    @foreach (var p in PathsToIndex)
+        if ( totalFilesCounter.ContainsKey(p))
+    { 
+        <RadzenProgressBar Value=@totalFilesCounter[p] Max=@totalFiles[p] Unit=@pgunit[p] />
+    }
+    
    
 </RadzenStack>
 @if (extensionStats.Count > 0)
 {
-    <h4 class="m4-4">Results(@totalFilesCounter)</h4>
+    <h4 class="m4-4">Results(@totalFilesCounter.Values.Sum())</h4>
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -57,13 +73,16 @@
 }
 
 @code {
-    private string folderPath = "";
+    private string PathsToIndexAsString = "";
     private Dictionary<string, int> extensionStats = new();
+    private List<string> PathsToIndex=new();
     //private Task _ensureIndexExistsTask;
     private ElasticsearchService es=null;
-    int totalFilesCounter = 0;
-    int totalFiles = 0;
-    string pgunit;
+    Dictionary<string,int> totalFilesCounter = new();
+    Dictionary<string,int> totalFiles = new();
+    Dictionary<string,string> pgunit=new();
+    private List<string> PathsInEs=new();
+    private string selectedPath;
 
     protected override async Task OnInitializedAsync()
     {
@@ -71,13 +90,15 @@
         var defaultPath = Options.Value.DefaultFolder;
         if (!string.IsNullOrWhiteSpace(defaultPath))
         {
-            folderPath = defaultPath;
+            PathsToIndexAsString = defaultPath;
 
         }
         var  _ensureIndexExistsTask =await  GetElasticsearchService(); // Ensure the service is initialized
         // _ensureIndexExistsTask.Wait();
         // var ee=ElasticsearchService.CreateAsync("http://localhost:9200", "dwg", "pdf");
         //ee.Wait();
+        PathsInEs = await es.GetAllPaths();
+        selectedPath = PathsInEs.FirstOrDefault() ?? string.Empty;
     }
     public async Task<bool> GetElasticsearchService()
     {
@@ -101,11 +122,34 @@
         Nav.NavigateTo(Nav.Uri, forceLoad: true);
     }
 
+    private void addToSearchPath()
+    {
+        if (!string.IsNullOrWhiteSpace(selectedPath))
+            PathsToIndexAsString += ";";
+        PathsToIndexAsString += selectedPath;
+    }
+    private void addAllToSearchPath()
+    {
+        foreach (var p in PathsInEs)
+        { if (!string.IsNullOrWhiteSpace(p))
+                PathsToIndexAsString += ";";
+            PathsToIndexAsString += p;}
+    }
+    private void replaceSearchPath()
+    {
+        PathsToIndexAsString = "";
+        foreach (var p in PathsInEs)
+        {
+            if (!string.IsNullOrWhiteSpace(p))
+                PathsToIndexAsString += ";";
+            PathsToIndexAsString += p;
+        }
+    }
     public bool CheckFolders()
     {
-        var folders = folderPath.Split(";");
+        PathsToIndex = PathsToIndexAsString.Split(";", StringSplitOptions.RemoveEmptyEntries).ToList();
 
-        foreach (var f in folders)
+        foreach (var f in PathsToIndex)
             if (!Directory.Exists(f))
                 return false;
 
@@ -115,14 +159,24 @@
     private async Task StartCrawling()
     {
         extensionStats.Clear();
-        totalFilesCounter = 0;
-        if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath))
+        //totalFilesCounter = 0;
+        //PathsToIndex = PathsToIndexAsString.Split(";");
+        var tasks = new List<Task>();
+        foreach (var p in PathsToIndex)
+            tasks.Add(indexFolder(p));
+        await Task.WhenAll(tasks);
+
+        NotifService.Notify(NotificationSeverity.Success, "Finished Indexing", "All files in folder indexed!", duration: 8000, closeOnClick: true);
+    }
+    private async Task indexFolder(string folder)
+    {
+        if (!Directory.Exists(folder))
             return;
-
-        var allFiles = Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories);
-        totalFiles = allFiles.Count();
-        pgunit = $" out of {totalFiles} ";
-
+        totalFilesCounter[folder] = 0;
+        var allFiles = Directory.GetFiles(folder, "*.*", SearchOption.AllDirectories);
+        totalFiles[folder] = allFiles.Count();
+        pgunit[folder] = $" out of {totalFiles[folder]} ";
+        int lastprecent = 0;
         foreach (var file in allFiles)
         {
             var ext = Path.GetExtension(file).ToLowerInvariant();
@@ -133,13 +187,14 @@
                 extensionStats[ext] = 0;
 
             extensionStats[ext]++;
-            totalFilesCounter++;
-            if (ext == ".pdf" )
+            totalFilesCounter[folder]++;
+            if (ext == ".pdf")
             {
                 var exists = await es.FileExists(file, ext);
                 if (exists)
                     continue;
                 var pdfParser = new PdfParser(file);
+                pdfParser.PdfData["searchpath"] = folder;
 
                 var response = await es.client.LowLevel.IndexAsync<StringResponse>(
                     "pdf",    // index name
@@ -152,7 +207,8 @@
                 var exists = await es.FileExists(file, ext);
                 if (exists)
                     continue;
-                var dwg = fileToDwgdata(file,Options.Value);
+                var dwg = fileToDwgdata(file, Options.Value);
+                dwg.searchpath = folder;
                 try
                 {
                     await es.IndexDwgAsync(dwg);
@@ -163,7 +219,7 @@
                     Console.WriteLine($"Error indexing {file}: {ex.Message}");
                 }
             }
-            else if(Extensions.IsPlainTextFile(file))
+            else if (Extensions.IsPlainTextFile(file))
             {
                 var exists = await es.FileExists(file, ext);
                 if (exists)
@@ -171,20 +227,21 @@
                 string text = File.ReadAllText(file, Encoding.Default);
                 System.IO.FileInfo fi = new System.IO.FileInfo(file);
                 var md = new TxtMetadata
-                    {
-                        Extension = fi.Extension,
-                        Size = fi.Length,
-                        Created = fi.CreationTime,
-                        LastModified = fi.LastWriteTime,
-                        FullPath = fi.FullName
-                    };
+                {
+                    Extension = fi.Extension,
+                    Size = fi.Length,
+                    Created = fi.CreationTime,
+                    LastModified = fi.LastWriteTime,
+                    FullPath = fi.FullName
+                };
                 var txt = new TextFileData
-                    {
-                       metadata=md,
-                        file = file,
-                        content = text,
-                       
-                    };
+                {
+                    metadata = md,
+                    file = file,
+                    content = text,
+                    searchpath = folder
+
+                };
                 try
                 {
                     await es.IndexDwgAsync(txt);
@@ -196,11 +253,15 @@
                 }
 
             }
-            if (totalFilesCounter % 10 == 0)
+            int percent = (totalFilesCounter[folder] * 100) / totalFiles[folder];
+            if (percent > lastprecent && totalFilesCounter[folder] % 5 == 0)
+            {
                 StateHasChanged();
+                lastprecent = percent;
+            }
         }
-        NotifService.Notify(NotificationSeverity.Success, "Finished Indexing", "All files in folder indexed!", duration: 8000, closeOnClick: true);
-    }
+        }
+    
     static DwgData fileToDwgdata(string path,CrawlerOptions options)
     {
         // 1. Run the external executable and capture the JSON output

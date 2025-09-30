@@ -6,6 +6,7 @@
 
 		public TxtMetadata metadata { get; set; }
 		public string content { get; set; }
+		public string searchpath { get; set; }
 
 		
 	}

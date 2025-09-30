@@ -158,6 +158,7 @@ else if (HasSearched)
     private int CurrentPage { get; set; } = 1;
     private int PageSize { get; set; } = 10;
     private List<string> Words;
+   
 
     private SearchResult? SelectedRecord { get; set; }
 
@@ -177,6 +178,7 @@ else if (HasSearched)
     {
         var _ensureIndexExistsTask = await GetElasticsearchService(); // Ensure the service is initialized
         Words = CrawlerOptions.Value.Words.Split(",").Select(item => item.Trim()).ToList();
+        
     }
     private void AddWord(string word)
     {

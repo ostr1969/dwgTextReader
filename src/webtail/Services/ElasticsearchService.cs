@@ -174,6 +174,24 @@ namespace webtail.Models
 			}
 			return false;
 		}
+		public async Task<List<string>> GetAllPaths()
+		{
+			List<string> paths=new List<string>();
+			var response = await client.SearchAsync<object>(s => s
+		   .Size(0) // don't return documents, only aggregation
+		   .Aggregations(a => a
+			   .Terms("unique_orgpaths", t => t
+				   .Field("searchpath.keyword") // use keyword to aggregate
+				   .Size(10000) // adjust if you expect many unique values
+			   )
+		   )
+	   );
+
+			var buckets = response.Aggregations.Terms("unique_orgpaths").Buckets;
+			foreach (var b in buckets)
+				paths.Add(b.Key);
+			return paths;
+		}
 
 
 	}

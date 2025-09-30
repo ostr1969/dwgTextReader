@@ -13,6 +13,7 @@ namespace webtail.Models
 		public CadSummaryInfo metadata { get; set; }
 		public string content { get; set; }
 		public string contentrev { get; set; }
+		public string searchpath { get; set; }
 
 		public static DwgData FromParser(DwgParser parser)
 		{
