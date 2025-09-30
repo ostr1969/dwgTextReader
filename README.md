@@ -42,13 +42,14 @@ The project uses [ACadSharp](https://github.com/DomCR/ACadSharp) for DWG file pa
 3. Open a browser and navigate to:  (http://localhost:5000)
 4. Use the UI to:  
 - Select folders to index  (can also reselect previously indexed folder from a list)
+- Checkbox if you want also ocr on pdfs
 - Wait for indexing to finish  
 - Perform searches (results will show your search words highlighted)
 - For each of the search result you can copy file path, download or view, or show full indexed record
 
 ## Limitations
 
-The Crawler do not perform ocr.
+The Crawler do not perform ocr on dwg files.
 
 ---
 
