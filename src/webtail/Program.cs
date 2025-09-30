@@ -6,7 +6,10 @@ using webtail.Models;
 using webtail.Services;
 using static webtail.Pages.EsSearch;
 
+
+//Environment.SetEnvironmentVariable("TESSDATA_PREFIX", tessDataPath, EnvironmentVariableTarget.User);
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Add services to the container.
 builder.Services.AddRazorPages();

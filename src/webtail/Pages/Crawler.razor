@@ -5,6 +5,7 @@
 @using Radzen
 @using System.Text
 @inject Microsoft.Extensions.Options.IOptions<CrawlerOptions> Options
+
 @inject NotificationService NotifService;
 @inject NavigationManager Nav
 <RadzenNotification />
@@ -25,7 +26,10 @@
     }
 </div>
 
-
+<div class="rz-p-2 rz-text-align-left">
+    <RadzenCheckBox @bind-Value=@includeOcr Name="includeocr" />
+    <RadzenLabel Text="include Ocr" Component="includeocr" class="rz-ms-2" />
+</div>
 <RadzenButton Text="Start Crawling" Click="async () => await StartCrawling()" Icon="find_in_page" Style="margin-right:10px;"
               Disabled="@(string.IsNullOrEmpty(PathsToIndexAsString) || es is  null)" />
 <RadzenButton Text="Clear ES" Click=@deleteIndexs Icon="delete_forever" Style="margin-right:10px;" IconColor="@Colors.Danger"
@@ -73,6 +77,7 @@
 }
 
 @code {
+    private bool includeOcr = false;
     private string PathsToIndexAsString = "";
     private Dictionary<string, int> extensionStats = new();
     private List<string> PathsToIndex=new();
@@ -172,6 +177,7 @@
     {
         if (!Directory.Exists(folder))
             return;
+        Console.WriteLine($"Start indexing {folder}");
         totalFilesCounter[folder] = 0;
         var allFiles = Directory.GetFiles(folder, "*.*", SearchOption.AllDirectories);
         totalFiles[folder] = allFiles.Count();
@@ -193,8 +199,13 @@
                 var exists = await es.FileExists(file, ext);
                 if (exists)
                     continue;
-                var pdfParser = new PdfParser(file);
+                var pdfParser = new PdfParser(file,includeOcr);
+                if (pdfParser.PdfData == null)
+                    continue;
                 pdfParser.PdfData["searchpath"] = folder;
+               
+
+               
 
                 var response = await es.client.LowLevel.IndexAsync<StringResponse>(
                     "pdf",    // index name

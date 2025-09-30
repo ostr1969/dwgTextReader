@@ -35,7 +35,7 @@ namespace webtail.Models
 
 			if (pingResponse.IsValid)
 			{
-				Console.WriteLine("Elasticsearch is alive ✅");
+				//Console.WriteLine("Elasticsearch is alive ✅");
 			}
 			else
 			{
@@ -118,7 +118,7 @@ namespace webtail.Models
 			{
 				throw new Exception(response.OriginalException.Message);
 			}
-			Console.WriteLine($"Indexed: {dwg.file}");
+			//Console.WriteLine($"Indexed: {dwg.file}");
 		}
 		public async Task IndexDwgAsync(TextFileData txt)
 		{
@@ -128,7 +128,7 @@ namespace webtail.Models
 			{
 				throw new Exception(response.OriginalException.Message);
 			}
-			Console.WriteLine($"Indexed: {txt.file}");
+			//Console.WriteLine($"Indexed: {txt.file}");
 		}
 
 		public async Task<ISearchResponse<object>> SearchArticlesAsync(string keyword,string index, Operator op)
