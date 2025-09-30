@@ -43,7 +43,11 @@ The project uses [ACadSharp](https://github.com/DomCR/ACadSharp) for DWG file pa
 - Select folders to index  (can also reselect previously indexed folder from a list)
 - Wait for indexing to finish  
 - Perform searches (results will show your search words highlighted)
+- For each of the search result you can copy file path, download or view, or show full indexed record
 
+## Limitations
+
+The Crawler do not perform ocr
 ---
 
 ## Screenshots / Usage Examples
