@@ -4,6 +4,8 @@
 @using Models
 @using Radzen
 @using System.Text
+@inject IJSRuntime JS
+
 @inject Microsoft.Extensions.Options.IOptions<CrawlerOptions> Options
 
 @inject NotificationService NotifService;
@@ -15,8 +17,9 @@
     <link rel="icon" type="image/png" href="images/crawler-48.png" />
 </HeadContent>
 
+@* <button @onclick="PickDirectory">Pick Folder</button> *@
 
-<h3><img src="images/crawler-48.png" style="margin-right: 30px;" />File Crawler</h3>
+<h3>File Crawler</h3>
 <div class="mb-3">
     <label>Folder Paths (seperate by semicolon):</label>
     <input type="text" class="form-control" @bind="PathsToIndexAsString" />
@@ -56,14 +59,18 @@
 </RadzenStack>
 @if (extensionStats.Count > 0)
 {
-    <h4 class="m4-4">Results(@totalFilesCounter.Values.Sum())</h4>
+    <div class=" rz-text-align-left">
+
+
+        <h4 class="m4-4"><RadzenIcon Icon="assessment" Class="rz-text-primary" Style="margin-right: 6px;" />File Extensions Statistics(@totalFilesCounter.Values.Sum())</h4>
+    </div>
     <table class="table table-bordered">
-        <thead>
+       @*  <thead>
             <tr>
                 <th>Extension</th>
                 <th>Count</th>
             </tr>
-        </thead>
+        </thead> *@
         <tbody>
             @foreach (var kvp in extensionStats)
             {
@@ -132,6 +139,11 @@
         if (!string.IsNullOrWhiteSpace(selectedPath))
             PathsToIndexAsString += ";";
         PathsToIndexAsString += selectedPath;
+    }
+    private async Task PickDirectory()
+    {
+        // Call our JS function
+        var files = await JS.InvokeAsync<List<string>>("pickDirectory");
     }
     private void addAllToSearchPath()
     {
