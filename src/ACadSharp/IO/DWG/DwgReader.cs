@@ -75,7 +75,7 @@ namespace ACadSharp.IO
 		/// <returns></returns>
 		public static CadDocument Read(string filename, NotificationEventHandler notification = null)
 		{
-			return Read(filename, new DwgReaderConfiguration(), notification);
+			return Read(filename, new DwgReaderConfiguration() , notification);
 		}
 
 		/// <summary>

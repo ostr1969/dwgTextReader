@@ -9,6 +9,7 @@ namespace webtail.Models
 		public string file { get; set; }
 		public List<string> layers { get; set; }
 		public List<string> textstyles { get; set; }
+		public List<string> imagenames { get; set; }
 		public List<DwgText> contentaslist { get; set; }
 		public CadSummaryInfo metadata { get; set; }
 		public string content { get; set; }
@@ -23,6 +24,7 @@ namespace webtail.Models
 			container.file = parser.Filename;
 			container.contentaslist = parser.dwgTexts;
 			container.metadata = parser.CadSummaryInfo;
+			container.imagenames = parser.ImageNames;
 			StringBuilder sb = new StringBuilder();
 			StringBuilder sbrev = new StringBuilder();
 			foreach (var obj in parser.dwgTexts)

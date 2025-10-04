@@ -143,7 +143,7 @@
     private async Task PickDirectory()
     {
         // Call our JS function
-        var files = await JS.InvokeAsync<List<string>>("pickDirectory");
+        var files = await JS.InvokeAsync<string>("pickDirectory");
     }
     private void addAllToSearchPath()
     {

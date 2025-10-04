@@ -159,7 +159,7 @@ else if (HasSearched)
     private int CurrentPage { get; set; } = 1;
     private int PageSize { get; set; } = 10;
     private List<string> Words;
-   
+
 
     private SearchResult? SelectedRecord { get; set; }
 
@@ -179,7 +179,7 @@ else if (HasSearched)
     {
         var _ensureIndexExistsTask = await GetElasticsearchService(); // Ensure the service is initialized
         Words = CrawlerOptions.Value.Words.Split(",").Select(item => item.Trim()).ToList();
-        
+
     }
     private void AddWord(string word)
     {
@@ -246,26 +246,33 @@ else if (HasSearched)
                         contentrev =(string) doc["contentrev"];
                     var meta = (Dictionary<string, object>)doc["metadata"];
                     filename = (string)doc["file"];
-                if (hit.Highlight.ContainsKey("file"))
-                    //HtmlContent = "<h4>File: " + hit.Highlight["file"].FirstOrDefault() + "</h4>";
-                    highlightFn = hit.Highlight["file"].FirstOrDefault();
-                else
-                    highlightFn = filename;
-                // if (hit.Highlight.ContainsKey("content.value"))
-                //     foreach (var highlight in hit.Highlight["content.value"])
-                //     {
-                //         HtmlContent += "\n" + highlight;
-                //     }
-                if (hit.Highlight.ContainsKey("content"))
-                    foreach (var highlight in hit.Highlight["content"])
+                    if (hit.Highlight.ContainsKey("file"))
+                        //HtmlContent = "<h4>File: " + hit.Highlight["file"].FirstOrDefault() + "</h4>";
+                        highlightFn = hit.Highlight["file"].FirstOrDefault();
+                    else
+                        highlightFn = filename;
+                    // if (hit.Highlight.ContainsKey("content.value"))
+                    //     foreach (var highlight in hit.Highlight["content.value"])
+                    //     {
+                    //         HtmlContent += "\n" + highlight;
+                    //     }
+                    if (hit.Highlight.ContainsKey("content"))
+                        foreach (var highlight in hit.Highlight["content"])
+                        {
+                            HtmlContent += "\n" + highlight;
+                        }
+                    if (hit.Highlight.ContainsKey("contentrev"))
+                        foreach (var highlight in hit.Highlight["contentrev"])
+                        {
+                            HtmlContent += "\n" + highlight;
+                        }
+                    if (hit.Highlight.ContainsKey("imagenames"))
                     {
-                        HtmlContent += "\n" + highlight;
-                    }
-                if (hit.Highlight.ContainsKey("contentrev"))
-                    foreach (var highlight in hit.Highlight["contentrev"])
-                    {
-                        HtmlContent += "\n" + highlight;
-                    }
+                        HtmlContent += "\n" + "<u>Images:</u>";
+                        foreach (var highlight in hit.Highlight["imagenames"])
+                        {
+                            HtmlContent += "\n" + highlight;
+                        }}
 
 
                 Results.Add(new SearchResult { Title = highlightFn, Highlight = HtmlContent,Metadata=meta,file=filename,Content=content,ContentRev=contentrev });

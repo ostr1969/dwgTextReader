@@ -138,13 +138,13 @@ namespace webtail.Models
 		.MultiMatch(m => m
 		.Query(keyword).Operator(op) // Text to search for within the array elements
 			.Fields(f=>f
-			.Field("file").Field("content").Field("contentrev")
+			.Field("file").Field("content").Field("contentrev").Field("imagenames")
 
 		)))
 	.Highlight(k=> k.PreTags("<mark>").PostTags("</mark>").MaxAnalyzedOffset(10000)
 		.Fields(
 			hf => hf.Field("file"),
-			
+			hf => hf.Field("imagenames"),
 			hf => hf.Field("content"),
 			hf => hf.Field("contentrev")
 		))

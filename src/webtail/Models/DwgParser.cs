@@ -39,6 +39,7 @@ namespace webtail.Models
 		public CrawlerOptions crawlerOptions;
 		public CadSummaryInfo? CadSummaryInfo;
 		public List<string> TextStyles = new();
+		public List<string> ImageNames = new();
 		public List<string> Layers = new();
 		public List<DwgText> dwgTexts = new();
 		public string? Filename;
@@ -85,6 +86,8 @@ namespace webtail.Models
 			Filename = filename;
 			using (DwgReader reader = new DwgReader(filename))
 			{
+				//reader.Configuration.KeepUnknownNonGraphicalObjects = true;
+				//reader.Configuration.KeepUnknownEntities = true;
 				doc = reader.Read();
 				
 				try
@@ -303,8 +306,12 @@ namespace webtail.Models
 					ownerName = owner.Name;
 				//if (layersStatus[o.Layer.Name] == false)
 				//	continue; //skip if layer is off
+				if (o is ACadSharp.Entities.RasterImage or)
+				{
+					ImageNames.Add($"{or.Definition.Name} {or.Definition.FileName}");
+				}
 
-				if (o is ACadSharp.Entities.MText om)
+					if (o is ACadSharp.Entities.MText om)
 				{
 					
 						(tval,tvalr) = txtdecode(om,om.Value);

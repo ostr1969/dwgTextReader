@@ -10,7 +10,7 @@
             .then(() => console.log('Copied to clipboard'))
             .catch(err => console.error('Failed to copy: ', err));
     }
-        async function pickDirectory() {
+        async function crwlDirectory() {
         try {
             const dirHandle = await window.showDirectoryPicker();
             let files = [];
@@ -28,6 +28,19 @@
 
             await readDir(dirHandle, "");
             return files;
+        } catch (err) {
+            console.error("Directory picking cancelled or failed", err);
+            return [];
+        }
+    }
+     async function pickDirectory() {
+        try {
+            const dirHandle = await window.showDirectoryPicker();
+            let files = [];
+
+            // Recursive function to walk folders
+           
+            return dirHandle.name;
         } catch (err) {
             console.error("Directory picking cancelled or failed", err);
             return [];
