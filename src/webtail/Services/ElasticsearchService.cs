@@ -149,7 +149,7 @@ namespace webtail.Models
 			hf => hf.Field("contentrev")
 		))
 		.Size(100) // Limit the number of results returned
-		.Source(src => src.Includes(i => i.Field("contentrev").Field("file").Field("id").Field("content").Field("metadata")))
+		.Source(src => src.Includes(i => i.Field("contentrev").Field("file").Field("id").Field("content").Field("metadata").Field("imagenames")))
 // Include only the 'content', 'file',  fields in the response
 // Adjust the fields as necessary based on your requirements
 // Note: The 'content' field is an array, so it will return all matching elements

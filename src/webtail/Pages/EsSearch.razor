@@ -1,6 +1,7 @@
 ﻿@page "/search"
 @using Microsoft.Extensions.Options
 @using Nest
+@using Newtonsoft.Json
 @using webtail.Models
 @inject ILogger<EsSearch> Logger
 @using Radzen.Blazor.Rendering
@@ -239,9 +240,13 @@ else if (HasSearched)
             { var results = await es.SearchArticlesAsync(SearchQuery, ind,op);
                 foreach (var hit in results.Hits)
                 {
+                    
                     string HtmlContent = "",contentrev="";
                     var doc = (Dictionary<string, object>)hit.Source;
                     var content =(string) doc["content"];
+                    //List<string> items = JsonSerializer.Deserialize<List<string>>(doc["imagenames"]); 
+                    var imagenames = ((IEnumerable<object>)doc["imagenames"]).Cast<string>().ToList();
+                        
                     if(doc.ContainsKey("contentrev"))
                         contentrev =(string) doc["contentrev"];
                     var meta = (Dictionary<string, object>)doc["metadata"];
@@ -275,7 +280,8 @@ else if (HasSearched)
                         }}
 
 
-                Results.Add(new SearchResult { Title = highlightFn, Highlight = HtmlContent,Metadata=meta,file=filename,Content=content,ContentRev=contentrev });
+                Results.Add(new SearchResult { Title = highlightFn, Highlight = HtmlContent,Metadata=meta,file=filename,Content=content,ContentRev=contentrev,
+                imagenames=imagenames});
 
 
             }}
@@ -306,6 +312,7 @@ else if (HasSearched)
         public string Content { get; set; }
         public string ContentRev { get; set; }
         public string file { get; set; }
+        public List<string> imagenames { get; set; }
         public string HtmlContent { get; set; }
         public string Highlight { get; set; }   // contains highlighted HTML snippet
         public Dictionary<string,object> Metadata { get; set; }

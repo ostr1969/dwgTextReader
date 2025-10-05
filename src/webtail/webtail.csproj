@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <Folder Include="Resources\" />
+    <Folder Include="thirdparty\" />
     <Folder Include="wwwroot\files\" />
   </ItemGroup>
 
@@ -34,7 +35,26 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="thirdparty\DWG TrueView 2026 - English - %28EN%29\**" />
+    <Compile Remove="thirdparty\elasticsearch-8.11.1\**" />
+    <Content Remove="thirdparty\DWG TrueView 2026 - English - %28EN%29\**" />
+    <Content Remove="thirdparty\elasticsearch-8.11.1\**" />
+    <EmbeddedResource Remove="thirdparty\DWG TrueView 2026 - English - %28EN%29\**" />
+    <EmbeddedResource Remove="thirdparty\elasticsearch-8.11.1\**" />
+    <None Remove="thirdparty\DWG TrueView 2026 - English - %28EN%29\**" />
+    <None Remove="thirdparty\elasticsearch-8.11.1\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="thirdparty\1. start_elastic.bat" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="wwwroot\images\Web-Tails32X32.png" />
+	  <Content Include="thirdparty\ספרנית.bat" >
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	  </Content>
   </ItemGroup>
 
   <ItemGroup>

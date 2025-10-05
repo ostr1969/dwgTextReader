@@ -86,8 +86,8 @@ namespace webtail.Models
 			Filename = filename;
 			using (DwgReader reader = new DwgReader(filename))
 			{
-				//reader.Configuration.KeepUnknownNonGraphicalObjects = true;
-				//reader.Configuration.KeepUnknownEntities = true;
+				reader.Configuration.KeepUnknownNonGraphicalObjects = true;
+				reader.Configuration.KeepUnknownEntities = true;
 				doc = reader.Read();
 				
 				try

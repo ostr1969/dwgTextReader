@@ -15,7 +15,10 @@
 {
     <h5>Full Metadata</h5>
     <pre class="wrapped-pre">@System.Text.Json.JsonSerializer.Serialize(State.CurrentResult.Metadata, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })</pre>
-
+    @if (State.CurrentResult.imagenames.Count>0)
+    {<h5>Image names</h5>
+    @foreach(var s in State.CurrentResult.imagenames)
+    {<p>@s</p>}}
     
     <RadzenButton Click="() => ToggleContent()">@(showContent ? "Hide Content" : "Show Content")</RadzenButton>
 
