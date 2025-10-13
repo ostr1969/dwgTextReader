@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DwgTextract": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\install\\Pdfs\\try1\\1images.dwg\""
+    }
+  }
+}

@@ -433,19 +433,22 @@ namespace webtail.Models
 		}
 		public (string, string) txtdecode(ACadSharp.Entities.MText ot,string txt)
 		{
-			string tval;
+			string tval, tvalReversed;
 			List<string> style2decode = encode_styles.Select(o => o.ToLower()).ToList();
 			//List<string> style2frog = frog_styles;
-			List<string> style2rev = rev_styles.Select(o => o.ToLower()).ToList();
-			if (style2decode.Contains(ot.Style.Name.ToLower()))			
+			if (style2decode.Contains(ot.Style.Name.ToLower()))
+			{
 				tval = txt.GibrishIterator();
-			else
-				tval = txt;
-
-
-			string tvalReversed = tval;
-			if (style2rev.Contains(ot.Style.Name.ToLower()))
 				tvalReversed = tval.Rev();
+			}
+			else
+			{
+				tval = txt;
+				tvalReversed = tval;
+			}
+			//string tvalReversed = tval;
+			//if (style2rev.Contains(ot.Style.Name.ToLower()))
+
 			return (tval, tvalReversed);
 		}
 	

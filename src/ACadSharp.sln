@@ -46,6 +46,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".config", ".config", "{003A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "webtail", "webtail\webtail.csproj", "{7A9EAD42-F80B-4C9F-9B49-1A2804FB3466}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DwgTextract", "DwgTextract\DwgTextract.csproj", "{92B7F45D-C3AC-456C-BC59-A9AC72BED9BB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -65,6 +67,12 @@ Global
 		{7A9EAD42-F80B-4C9F-9B49-1A2804FB3466}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7A9EAD42-F80B-4C9F-9B49-1A2804FB3466}.Test|Any CPU.ActiveCfg = Test|Any CPU
 		{7A9EAD42-F80B-4C9F-9B49-1A2804FB3466}.Test|Any CPU.Build.0 = Test|Any CPU
+		{92B7F45D-C3AC-456C-BC59-A9AC72BED9BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92B7F45D-C3AC-456C-BC59-A9AC72BED9BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92B7F45D-C3AC-456C-BC59-A9AC72BED9BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92B7F45D-C3AC-456C-BC59-A9AC72BED9BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92B7F45D-C3AC-456C-BC59-A9AC72BED9BB}.Test|Any CPU.ActiveCfg = Test|Any CPU
+		{92B7F45D-C3AC-456C-BC59-A9AC72BED9BB}.Test|Any CPU.Build.0 = Test|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
