@@ -31,11 +31,11 @@
 
 <div class="rz-p-2 rz-text-align-left">
     <RadzenCheckBox @bind-Value=@includeOcr Name="includeocr" />
-    <RadzenLabel Text="include Ocr" Component="includeocr" class="rz-ms-2" />
+    <RadzenLabel Text="include Ocr(Beta)" Component="includeocr" class="rz-ms-2" />
 </div>
-<RadzenButton Text="Start Crawling" Click="async () => await StartCrawling()" Icon="find_in_page" Style="margin-right:10px;"
+<RadzenButton Text="Start Indexing" Click="async () => await StartCrawling()" Icon="find_in_page" Style="margin-right:10px;"
               Disabled="@(string.IsNullOrEmpty(PathsToIndexAsString) || es is  null)" />
-<RadzenButton Text="Clear ES" Click=@deleteIndexs Icon="delete_forever" Style="margin-right:10px;" IconColor="@Colors.Danger"
+<RadzenButton Text="Clear Database" Click=@deleteIndexs Icon="delete_forever" Style="margin-right:10px;" IconColor="@Colors.Danger"
               Disabled="@( es is  null)" />
 @if(PathsInEs.Count>0)
 {<h5 class="mt-3">Paths allready in Elastic:</h5>

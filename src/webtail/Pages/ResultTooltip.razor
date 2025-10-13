@@ -1,9 +1,11 @@
 ﻿@using webtail.Services
 @using static webtail.Pages.EsSearch
 @inject FileService FileService
+@using Radzen
 @inject NavigationManager Navigation
 @inject ResultState State
 @inject IHttpContextAccessor HttpContextAccessor
+@inject NotificationService NotifService;
 <div class="popup-wrapper" >
    
     <RadzenButton Text="Copy Filename" class="popup-button" Click="() => CopyText(Result.Title)" Variant="Variant.Outlined" />
@@ -18,7 +20,7 @@
 </div>
 <RadzenButton Text="Open/Download" Click="() => OpenFile(Result.file)" ButtonStyle="ButtonStyle.Success" Variant="Variant.Outlined" />
 <RadzenButton Text="Full Details" Click="() => OpenDetails(Result)" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined" />
-
+<RadzenNotification />
 
 
 @code {
@@ -34,7 +36,11 @@
     {
         // Optional: copy to random name
         var randomFile = await FileService.CreateRandomFileAsync(fileName);
-
+        if (randomFile=="_")
+        {
+            NotifService.Notify(NotificationSeverity.Error, "File Not Found", "The file exist in index but not on the path!", duration: 8000, closeOnClick: true);
+            return;
+        }
         // Open in new tab; PDF/images inline, others download
         var url = $"/files/{randomFile}";
         await JS.InvokeVoidAsync("open", url, "_blank");
