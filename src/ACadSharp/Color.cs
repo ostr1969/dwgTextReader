@@ -9,6 +9,14 @@ namespace ACadSharp
 	public readonly struct Color : IEquatable<Color>
 	{
 		/// <summary>
+		/// Defines a default black color.
+		/// </summary>
+		public static Color Black
+		{
+			get { return new Color(250); }
+		}
+
+		/// <summary>
 		/// Defines a default blue color.
 		/// </summary>
 		public static Color Blue
@@ -533,7 +541,7 @@ namespace ACadSharp
 		/// Approximates color from a true color RGB.
 		/// </summary>
 		/// <returns>Approximate RGB color.</returns>
-		public byte GetApproxIndex()
+		public short GetApproxIndex()
 		{
 			if (this.IsTrueColor)
 			{
@@ -541,7 +549,7 @@ namespace ACadSharp
 			}
 			else
 			{
-				return (byte)this.Index;
+				return this.Index;
 			}
 		}
 

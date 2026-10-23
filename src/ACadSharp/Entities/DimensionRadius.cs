@@ -1,5 +1,6 @@
 ﻿using ACadSharp.Attributes;
 using CSMath;
+using CSMath.Extensions;
 
 namespace ACadSharp.Entities
 {
@@ -60,6 +61,19 @@ namespace ACadSharp.Entities
 		public override BoundingBox GetBoundingBox()
 		{
 			return new BoundingBox(this.InsertionPoint - this.AngleVertex, this.InsertionPoint + this.AngleVertex);
+		}
+
+		/// <inheritdoc/>
+		public override void UpdateBlock()
+		{
+			base.UpdateBlock();
+
+			double offset = this.DefinitionPoint.DistanceFrom(this.TextMiddlePoint);
+			XY centerRef = this.DefinitionPoint.Convert<XY>();
+			XY ref1 = this.AngleVertex.Convert<XY>();
+			double minOffset = 2 * this.Style.ArrowSize * this.Style.ScaleFactor;
+
+			this.angularBlock(this.Measurement, centerRef, ref1, minOffset, false);
 		}
 	}
 }

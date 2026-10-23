@@ -1,9 +1,8 @@
-﻿using ACadSharp;
-using ACadSharp.Entities;
+﻿using ACadSharp.Entities;
 using CSMath;
 using System.Collections.Generic;
 
-namespace DwgCrawler.Entities
+namespace ACadSharp.Examples.Entities
 {
 	internal class CircleHatchExample
 	{

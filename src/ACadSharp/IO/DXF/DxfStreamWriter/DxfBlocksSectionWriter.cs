@@ -1,7 +1,8 @@
-﻿using ACadSharp.Blocks;
+﻿using System;
+using ACadSharp.Blocks;
 using ACadSharp.Entities;
+using ACadSharp.IO.DXF.DxfStreamWriter;
 using ACadSharp.Tables;
-using System.Linq;
 
 namespace ACadSharp.IO.DXF
 {
@@ -34,12 +35,17 @@ namespace ACadSharp.IO.DXF
 
 			this._writer.Write(DxfCode.Subclass, DxfSubclassMarker.BlockBegin);
 
-			if (!string.IsNullOrEmpty(block.XrefPath))
+			if (!string.IsNullOrEmpty(block.XRefPath))
 			{
-				this._writer.Write(1, block.XrefPath, map);
+				this._writer.Write(1, block.XRefPath, map);
 			}
 			this._writer.Write(2, block.Name, map);
 			this._writer.Write(70, (short)block.Flags, map);
+
+			if (this.Version >= ACadVersion.AC1015 && block.IsUnloaded)
+			{
+				this._writer.Write(71, block.IsUnloaded ? 1 : 0, map);
+			}
 
 			this._writer.Write(10, block.BasePoint, map);
 
@@ -49,10 +55,16 @@ namespace ACadSharp.IO.DXF
 
 		private void processEntities(BlockRecord b)
 		{
-			if (b.Name == BlockRecord.ModelSpaceName || b.Name == BlockRecord.PaperSpaceName)
+			if (b.Name.Equals(BlockRecord.ModelSpaceName, StringComparison.OrdinalIgnoreCase) ||
+				b.Name.Equals(BlockRecord.PaperSpaceName, StringComparison.OrdinalIgnoreCase))
 			{
 				foreach (Entity e in b.Entities)
 				{
+					if(e is Seqend)
+					{
+
+					}
+
 					this.Holder.Entities.Enqueue(e);
 				}
 			}

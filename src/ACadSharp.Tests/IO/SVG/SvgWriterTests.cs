@@ -1,44 +1,65 @@
-﻿using ACadSharp.Entities;
-using ACadSharp.IO;
-using ACadSharp.Tests.Common;
-using System;
+﻿using ACadSharp.IO;
+using ACadSharp.Objects;
 using System.IO;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace ACadSharp.Tests.IO.SVG
+namespace ACadSharp.Tests.IO.SVG;
+
+public class SvgWriterTests : IOTestsBase
 {
-	public class SvgWriterTests : IOTestsBase
+	public static CadDocument Document { get; }
+
+	public static readonly TheoryData<string> LayoutNames = new();
+
+	static SvgWriterTests()
 	{
-		public static readonly TheoryData<Type> EntityTypes = new TheoryData<Type>();
+		string dwgFile = Path.Combine(TestVariables.SamplesFolder, "svg", $"export_sample.dwg");
+		Document = DwgReader.Read(dwgFile);
 
-		static SvgWriterTests()
+		foreach (var item in Document.Layouts)
 		{
-			foreach (var item in DataFactory.GetTypes<Entity>())
+			if (!item.IsPaperSpace)
 			{
-				if (item == typeof(UnknownEntity))
-				{
-					continue;
-				}
-
-				EntityTypes.Add(item);
+				continue;
 			}
+
+			LayoutNames.Add(item.Name);
 		}
+	}
 
-		public SvgWriterTests(ITestOutputHelper output) : base(output) { }
+	public SvgWriterTests(ITestOutputHelper output) : base(output)
+	{
+	}
 
-		[Fact]
-		public void WriteModel()
+	[Theory]
+	[MemberData(nameof(LayoutNames))]
+	public void WriteLayouts(string name)
+	{
+		Layout layout = Document.Layouts[name];
+
+		using (SvgWriter writer = this.createWriter($"{name}.svg", Document))
 		{
-			string svg = Path.Combine(TestVariables.OutputSvgFolder, $"model.svg");
-			string dwg = Path.Combine(TestVariables.SamplesFolder, "svg", $"export_sample.dwg");
-			var doc = DwgReader.Read(dwg);
-
-			using (SvgWriter writer = new SvgWriter(svg, doc))
-			{
-				writer.OnNotification += this.onNotification;
-				writer.Write();
-			}
+			writer.Write(layout);
 		}
+	}
+
+	[Fact]
+	public void WriteModel()
+	{
+		using (SvgWriter writer = this.createWriter($"model.svg", Document))
+		{
+			writer.Write();
+		}
+	}
+
+	private SvgWriter createWriter(string filename, CadDocument doc)
+	{
+		string output = Path.Combine(TestVariables.OutputSvgFolder, filename);
+
+		var writer = new SvgWriter(output, doc);
+		writer.Configuration = this._svgConfiguration;
+		writer.OnNotification += this.onNotification;
+		return writer;
 	}
 }

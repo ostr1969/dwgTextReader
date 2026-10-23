@@ -1,5 +1,6 @@
 ﻿using ACadSharp.Blocks;
 using ACadSharp.Exceptions;
+using ACadSharp.IO.DXF.DxfStreamReader;
 using ACadSharp.IO.Templates;
 using ACadSharp.Tables;
 using System;
@@ -55,7 +56,7 @@ namespace ACadSharp.IO.DXF
 			DxfMap map = DxfMap.Create<Block>();
 
 			Block blckEntity = new Block();
-			CadEntityTemplate template = new CadEntityTemplate(blckEntity);
+			CadBlockEntityTemplate template = new CadBlockEntityTemplate(blckEntity);
 
 			string name = null;
 			BlockRecord record = null;
@@ -128,6 +129,9 @@ namespace ACadSharp.IO.DXF
 				recordTemplate = new CadBlockRecordTemplate(record);
 			}
 
+			//Add the entity template for owner information
+			recordTemplate.BlockEntityTemplate = template;
+
 			while (this._reader.ValueAsString != DxfFileToken.EndBlock)
 			{
 				CadEntityTemplate entityTemplate = null;
@@ -155,11 +159,15 @@ namespace ACadSharp.IO.DXF
 
 				if (entityTemplate.OwnerHandle == null)
 				{
-					recordTemplate.OwnedObjectsHandlers.Add(entityTemplate.CadObject.Handle);
+					recordTemplate.ReferenceTemplates.Add(entityTemplate);
 				}
-				else if (this._builder.TryGetObjectTemplate(entityTemplate.OwnerHandle, out CadBlockRecordTemplate owner))
+				else if (this._builder.TryGetObjectTemplate(entityTemplate.OwnerHandle, out ICadOwnerTemplate owner))
 				{
 					owner.OwnedObjectsHandlers.Add(entityTemplate.CadObject.Handle);
+				}
+				else
+				{
+					this._builder.OrphanTemplates.Add(entityTemplate);
 				}
 			}
 

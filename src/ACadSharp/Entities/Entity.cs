@@ -1,315 +1,367 @@
 ﻿using ACadSharp.Attributes;
-using ACadSharp.Entities;
+using ACadSharp.Entities.ProxyGraphics;
 using ACadSharp.Objects;
 using ACadSharp.Tables;
 using CSMath;
-using CSUtilities.Extensions;
+using CSMath.Extensions;
 using System;
 using System.Collections.Generic;
 
-namespace ACadSharp.Entities
+namespace ACadSharp.Entities;
+
+/// <summary>
+/// The standard class for a basic CAD entity or a graphical object.
+/// </summary>
+[DxfSubClass(DxfSubclassMarker.Entity)]
+public abstract class Entity : CadObject, IEntity
 {
 	/// <summary>
-	/// The standard class for a basic CAD entity or a graphical object.
+	/// Book color for this entity.
 	/// </summary>
-	[DxfSubClass(DxfSubclassMarker.Entity)]
-	public abstract class Entity : CadObject, IEntity
+	[DxfCodeValue(DxfReferenceType.Name, 430)]
+	public BookColor BookColor
 	{
-		/// <summary>
-		/// Book color for this entity.
-		/// </summary>
-		[DxfCodeValue(DxfReferenceType.Name, 430)]
-		public BookColor BookColor
+		get { return this._bookColor; }
+		set
 		{
-			get { return this._bookColor; }
-			set
+			this._bookColor = this.updateCollectionEntry(value, c => this._bookColor = c, this.Document?.Colors);
+		}
+	}
+
+	/// <inheritdoc/>
+	[DxfCodeValue(62, 420)]
+	public Color Color { get; set; } = Color.ByLayer;
+
+	/// <summary>
+	/// Gets a value indicating whether any proxy geometries are present.
+	/// </summary>
+	public bool HasProxyGeometries
+	{
+		get
+		{
+			return this._proxyGeometries != null && this._proxyGeometries.Count > 0;
+		}
+	}
+
+	/// <inheritdoc/>
+	[DxfCodeValue(60)]
+	public bool IsInvisible { get; set; } = false;
+
+	/// <inheritdoc/>
+	[DxfCodeValue(DxfReferenceType.Name, 8)]
+	public virtual Layer Layer
+	{
+		get { return this._layer; }
+		set
+		{
+			if (value == null)
 			{
-				if (this.Document != null)
-				{
-					this._bookColor = this.updateCollection(value, this.Document.Colors);
-				}
-				else
-				{
-					this._bookColor = value;
-				}
+				throw new ArgumentNullException(nameof(value));
+			}
+
+			this._layer = updateTableEntry(value, l => this._layer = l, this.Document?.Layers);
+		}
+	}
+
+	/// <inheritdoc/>
+	[DxfCodeValue(DxfReferenceType.Name, 6)]
+	public virtual LineType LineType
+	{
+		get { return this._lineType; }
+		set
+		{
+			if (value == null)
+			{
+				throw new ArgumentNullException(nameof(value));
+			}
+
+			this._lineType = updateTableEntry(value, l => this._lineType = l, this.Document?.LineTypes);
+		}
+	}
+
+	/// <inheritdoc/>
+	[DxfCodeValue(48)]
+	public double LineTypeScale { get; set; } = 1.0;
+
+	/// <inheritdoc/>
+	[DxfCodeValue(370)]
+	public LineWeightType LineWeight { get; set; } = LineWeightType.ByLayer;
+
+	/// <inheritdoc/>
+	[DxfCodeValue(DxfReferenceType.Handle, 347)]
+	public Material Material
+	{
+		get { return this._material; }
+		set
+		{
+			this._material = this.updateCollectionEntry(value, m => this._material = m, this.Document?.Materials);
+		}
+	}
+
+	/// <summary>
+	/// Gets the list of proxy geometries for this entity.
+	/// </summary>
+	public List<IProxyGeometry> ProxyGeometries
+	{
+		get
+		{
+			if (this._proxyGeometries == null)
+			{
+				this._proxyGeometries = new List<IProxyGeometry>();
+			}
+
+			return _proxyGeometries;
+		}
+	}
+
+	/// <inheritdoc/>
+	public override string SubclassMarker => DxfSubclassMarker.Entity;
+
+	/// <inheritdoc/>
+	[DxfCodeValue(440)]
+	public Transparency Transparency { get; set; } = Transparency.ByLayer;
+
+	private BookColor _bookColor = null;
+
+	private Layer _layer = Layer.Default;
+
+	private LineType _lineType = LineType.ByLayer;
+
+	private Material _material = null;
+
+	private List<IProxyGeometry> _proxyGeometries = null;
+
+	/// <inheritdoc/>
+	public Entity() : base() { }
+
+	/// <summary>
+	/// Apply a rotation to this entity.
+	/// </summary>
+	/// <param name="axis"></param>
+	/// <param name="rotation">The angle to rotate around the given axis, in radians.</param>
+	public void ApplyRotation(XYZ axis, double rotation)
+	{
+		Transform transform = Transform.CreateRotation(axis, rotation);
+		this.ApplyTransform(transform);
+	}
+
+	/// <summary>
+	/// Apply a scaling transformation to this entity.
+	/// </summary>
+	/// <param name="scale"></param>
+	public void ApplyScaling(XYZ scale)
+	{
+		Transform transform = Transform.CreateScaling(scale);
+		this.ApplyTransform(transform);
+	}
+
+	/// <summary>
+	/// Apply a scaling transformation to this entity.
+	/// </summary>
+	/// <param name="scale"></param>
+	/// <param name="origin"></param>
+	public void ApplyScaling(XYZ scale, XYZ origin)
+	{
+		Transform transform = Transform.CreateScaling(scale, origin);
+		this.ApplyTransform(transform);
+	}
+
+	/// <inheritdoc/>
+	public abstract void ApplyTransform(Transform transform);
+
+	/// <summary>
+	/// Apply a translation to this entity.
+	/// </summary>
+	/// <param name="translation"></param>
+	public void ApplyTranslation(XYZ translation)
+	{
+		Transform transform = Transform.CreateTranslation(translation);
+		this.ApplyTransform(transform);
+	}
+
+	/// <inheritdoc/>
+	public override CadObject Clone()
+	{
+		Entity clone = (Entity)base.Clone();
+
+		clone.Layer = (Layer)this.Layer.Clone();
+		clone.LineType = (LineType)this.LineType.Clone();
+		clone.Material = (Material)this.Material?.Clone();
+
+		if (this._proxyGeometries != null)
+		{
+			clone._proxyGeometries = new List<IProxyGeometry>();
+			foreach (var item in this._proxyGeometries)
+			{
+				clone._proxyGeometries.Add(item.Clone());
 			}
 		}
 
-		/// <inheritdoc/>
-		[DxfCodeValue(62, 420)]
-		public Color Color { get; set; } = Color.ByLayer;
+		return clone;
+	}
 
-		/// <inheritdoc/>
-		[DxfCodeValue(60)]
-		public bool IsInvisible { get; set; } = false;
-
-		/// <inheritdoc/>
-		[DxfCodeValue(DxfReferenceType.Name, 8)]
-		public Layer Layer
+	/// <inheritdoc/>
+	public Color GetActiveColor()
+	{
+		Color color;
+		if (this.Color.IsByLayer)
 		{
-			get { return this._layer; }
-			set
-			{
-				if (value == null)
-				{
-					throw new ArgumentNullException(nameof(value));
-				}
-
-				this._layer = updateTable(value, this.Document?.Layers);
-			}
+			color = this.Layer.Color;
 		}
-
-		/// <inheritdoc/>
-		[DxfCodeValue(DxfReferenceType.Name, 6)]
-		public LineType LineType
+		else if (this.Color.IsByBlock && this.Owner is BlockRecord record)
 		{
-			get { return this._lineType; }
-			set
-			{
-				if (value == null)
-				{
-					throw new ArgumentNullException(nameof(value));
-				}
-
-				this._lineType = updateTable(value, this.Document?.LineTypes);
-			}
-		}
-
-		/// <inheritdoc/>
-		[DxfCodeValue(48)]
-		public double LinetypeScale { get; set; } = 1.0;
-
-		/// <inheritdoc/>
-		[DxfCodeValue(370)]
-		public LineweightType LineWeight { get; set; } = LineweightType.ByLayer;
-
-		/// <inheritdoc/>
-		[DxfCodeValue(DxfReferenceType.Handle, 347)]
-		public Material Material { get; set; }
-
-		/// <inheritdoc/>
-		public override string SubclassMarker => DxfSubclassMarker.Entity;
-
-		/// <inheritdoc/>
-		[DxfCodeValue(440)]
-		public Transparency Transparency { get; set; } = Transparency.ByLayer;
-
-		private BookColor _bookColor = null;
-
-		private Layer _layer = Layer.Default;
-
-		private LineType _lineType = LineType.ByLayer;
-
-		/// <inheritdoc/>
-		public Entity() : base() { }
-
-		/// <summary>
-		/// Apply a translation to this entity.
-		/// </summary>
-		/// <param name="translation"></param>
-		public void ApplyTranslation(XYZ translation)
-		{
-			Transform transform = Transform.CreateTranslation(translation);
-			this.ApplyTransform(transform);
-		}
-
-		/// <summary>
-		/// Apply a rotation to this entity.
-		/// </summary>
-		/// <param name="axis"></param>
-		/// <param name="rotation"></param>
-		public void ApplyRotation(XYZ axis, double rotation)
-		{
-			Transform transform = Transform.CreateRotation(axis, rotation);
-			this.ApplyTransform(transform);
-		}
-
-		/// <summary>
-		/// Apply a scale to this entity.
-		/// </summary>
-		/// <param name="scale"></param>
-		public void ApplyScaling(XYZ scale)
-		{
-			Transform transform = Transform.CreateScaling(scale);
-			this.ApplyTransform(transform);
-		}
-
-		public void ApplyScaling(XYZ scale, XYZ origin)
-		{
-			Transform transform = Transform.CreateScaling(scale, origin);
-			this.ApplyTransform(transform);
-		}
-
-		/// <inheritdoc/>
-		public abstract void ApplyTransform(Transform transform);
-
-		/// <inheritdoc/>
-		public override CadObject Clone()
-		{
-			Entity clone = (Entity)base.Clone();
-
-			clone.Layer = (Layer)this.Layer.Clone();
-			clone.LineType = (LineType)this.LineType.Clone();
-			clone.Material = (Material)this.Material?.Clone();
-
-			return clone;
-		}
-
-		/// <inheritdoc/>
-		public Color GetActiveColor()
-		{
-			Color color;
-			if (this.Color.IsByLayer)
+			color = record.BlockEntity.Color;
+			if (color.IsByLayer)
 			{
 				color = this.Layer.Color;
 			}
-			else
-			{
-				color = this.Color;
-			}
-
-			return color;
 		}
-
-		/// <inheritdoc/>
-		public abstract BoundingBox GetBoundingBox();
-
-		/// <inheritdoc/>
-		public void MatchProperties(IEntity entity)
+		else
 		{
-			if (entity is null)
-			{
-				throw new ArgumentNullException(nameof(entity));
-			}
-
-			if (entity.Handle == 0)
-			{
-				entity.Layer = (Layer)this.Layer.Clone();
-				entity.LineType = (LineType)this.LineType.Clone();
-			}
-			else
-			{
-				entity.Layer = this.Layer;
-				entity.LineType = this.LineType;
-			}
-
-			entity.Color = this.Color;
-			entity.LineWeight = this.LineWeight;
-			entity.LinetypeScale = this.LinetypeScale;
-			entity.IsInvisible = this.IsInvisible;
-			entity.Transparency = this.Transparency;
+			color = this.Color;
 		}
 
-		internal override void AssignDocument(CadDocument doc)
+		return color;
+	}
+
+	/// <inheritdoc/>
+	public LineType GetActiveLineType()
+	{
+		if (this.LineType.Name.Equals(LineType.ByLayerName, StringComparison.InvariantCultureIgnoreCase))
 		{
-			base.AssignDocument(doc);
-
-			this._layer = updateTable(this.Layer, doc.Layers);
-			this._lineType = updateTable(this.LineType, doc.LineTypes);
-
-			doc.Layers.OnRemove += this.tableOnRemove;
-			doc.LineTypes.OnRemove += this.tableOnRemove;
+			return this.Layer.LineType;
 		}
-
-		internal override void UnassignDocument()
+		else if (this.LineType.Name.Equals(LineType.ByBlockName, StringComparison.InvariantCultureIgnoreCase)
+			&& this.Owner is BlockRecord record)
 		{
-			this.Document.Layers.OnRemove -= this.tableOnRemove;
-			this.Document.LineTypes.OnRemove -= this.tableOnRemove;
-
-			base.UnassignDocument();
-
-			this.Layer = (Layer)this.Layer.Clone();
-			this.LineType = (LineType)this.LineType.Clone();
+			return record.BlockEntity.LineType;
 		}
 
-		protected XYZ transformNormal(Transform transform, XYZ normal)
+		return this.LineType;
+	}
+
+	/// <inheritdoc/>
+	public LineWeightType GetActiveLineWeightType()
+	{
+		switch (this.LineWeight)
 		{
-			return transform.Rotate(normal).Normalize();
+			case LineWeightType.ByLayer:
+				return this.Layer.LineWeight;
+			case LineWeightType.ByBlock:
+				if (this.Owner is BlockRecord record)
+				{
+					return record.BlockEntity.GetActiveLineWeightType();
+				}
+				else
+				{
+					return this.LineWeight;
+				}
+			default:
+				return this.LineWeight;
 		}
+	}
 
-		protected virtual void tableOnRemove(object sender, CollectionChangedEventArgs e)
+	/// <inheritdoc/>
+	public abstract BoundingBox GetBoundingBox();
+
+	/// <inheritdoc/>
+	public void MatchProperties(IEntity entity)
+	{
+		if (entity is null)
 		{
-			if (e.Item.Equals(this.Layer))
-			{
-				this.Layer = this.Document.Layers[Layer.DefaultName];
-			}
-
-			if (e.Item.Equals(this.LineType))
-			{
-				this.LineType = this.Document.LineTypes[LineType.ByLayerName];
-			}
+			throw new ArgumentNullException(nameof(entity));
 		}
 
-		protected Matrix3 getWorldMatrix(Transform transform, XYZ normal, XYZ newNormal, out Matrix3 transOW, out Matrix3 transWO)
+		if (entity.Handle == 0 || this.Document != entity.Document)
 		{
-			transOW = Matrix3.ArbitraryAxis(normal);
-			transWO = Matrix3.ArbitraryAxis(newNormal).Transpose();
-			return new Matrix3(transform.Matrix);
+			this.Layer = (Layer)entity.Layer.Clone();
+			this.LineType = (LineType)entity.LineType.Clone();
+			this.Material = (Material)entity.Material?.Clone();
 		}
-
-		protected XYZ applyWorldMatrix(XYZ xyz, Transform transform, Matrix3 transOW, Matrix3 transWO)
+		else
 		{
-			XYZ v = transOW * xyz;
-			v = transform.ApplyTransform(v);
-			v = transWO * v;
-			return v;
+			this.Layer = entity.Layer;
+			this.LineType = entity.LineType;
+			this.Material = entity.Material;
 		}
 
-		protected XYZ applyWorldMatrix(XYZ xyz, XYZ normal, XYZ newNormal)
+		this.Color = entity.Color;
+		this.LineWeight = entity.LineWeight;
+		this.LineTypeScale = entity.LineTypeScale;
+		this.IsInvisible = entity.IsInvisible;
+		this.Transparency = entity.Transparency;
+	}
+
+	internal override void AssignDocument(CadDocument doc)
+	{
+		base.AssignDocument(doc);
+
+		this._bookColor = this.updateCollectionEntry(this._bookColor, c => this._bookColor = c, doc.Colors);
+		this._material = this.updateCollectionEntry(this._material, m => this._material = m, doc.Materials);
+
+		this._layer = this.updateTableEntry(this._layer, l => this._layer = l, doc.Layers);
+		this._lineType = this.updateTableEntry(this._lineType, l => this._lineType = l, doc.LineTypes);
+	}
+
+	internal override void UnassignDocument()
+	{
+		this.Document.Colors.RemoveReference(this._bookColor?.Name, this);
+		this.Document.Materials.RemoveReference(this._material?.Name, this);
+
+		this.Document.Layers.RemoveReference(this.Layer.Name, this);
+		this.Document.LineTypes.RemoveReference(this.LineType.Name, this);
+
+		base.UnassignDocument();
+
+		this._layer = (Layer)this.Layer.Clone();
+		this._lineType = (LineType)this.LineType.Clone();
+
+		this._bookColor = (BookColor)this.BookColor?.Clone();
+		this._material = (Material)this.Material?.Clone();
+	}
+
+	protected List<XY> applyRotation(IEnumerable<XY> points, double rotation)
+	{
+		if (points == null)
 		{
-			var transOW = Matrix3.ArbitraryAxis(normal).Transpose();
-			var transWO = Matrix3.ArbitraryAxis(newNormal);
-			XYZ v = transOW * xyz;
-			v = transWO * v;
-			return v;
+			throw new ArgumentNullException(nameof(points));
 		}
 
-		protected List<XY> applyRotation(IEnumerable<XY> points, double rotation)
+		if (rotation.IsZero())
 		{
-			if (points == null)
-			{
-				throw new ArgumentNullException(nameof(points));
-			}
-
-			if (MathHelper.IsZero(rotation))
-			{
-				return new List<XY>(points);
-			}
-
-			double sin = Math.Sin(rotation);
-			double cos = Math.Cos(rotation);
-
-			List<XY> transPoints;
-
-			transPoints = new List<XY>();
-			foreach (XY p in points)
-			{
-				transPoints.Add(new XY(p.X * cos - p.Y * sin, p.X * sin + p.Y * cos));
-			}
-			return transPoints;
+			return new List<XY>(points);
 		}
 
-		protected List<XYZ> applyRotation(IEnumerable<XYZ> points, XYZ zAxis)
+		double sin = Math.Sin(rotation);
+		double cos = Math.Cos(rotation);
+
+		List<XY> transPoints;
+
+		transPoints = new List<XY>();
+		foreach (XY p in points)
 		{
-			if (points == null)
-			{
-				throw new ArgumentNullException(nameof(points));
-			}
-
-			Matrix3 trans = Matrix3.ArbitraryAxis(zAxis);
-			List<XYZ> transPoints;
-			transPoints = new List<XYZ>();
-			foreach (XYZ p in points)
-			{
-				transPoints.Add(trans * p);
-			}
-			return transPoints;
+			transPoints.Add(new XY(p.X * cos - p.Y * sin, p.X * sin + p.Y * cos));
 		}
+		return transPoints;
+	}
 
-		protected XYZ applyRotation(XYZ points, XYZ zAxis)
-		{
-			Matrix4 trans = Matrix4.GetArbitraryAxis(zAxis).Transpose();
-			return trans * points;
-		}
+	protected XYZ applyWorldMatrix(XYZ xyz, Transform transform, Matrix3 transOW, Matrix3 transWO)
+	{
+		XYZ v = transOW * xyz;
+		v = transform.ApplyTransform(v);
+		v = transWO * v;
+		return v;
+	}
+
+	protected Matrix3 getWorldMatrix(Transform transform, XYZ normal, XYZ newNormal, out Matrix3 transOW, out Matrix3 transWO)
+	{
+		transOW = Matrix3.ArbitraryAxis(normal);
+		transWO = Matrix3.ArbitraryAxis(newNormal).Transpose();
+		return new Matrix3(transform.Matrix);
+	}
+
+	protected XYZ transformNormal(Transform transform, XYZ normal)
+	{
+		return transform.ApplyRotation(normal).Normalize();
 	}
 }

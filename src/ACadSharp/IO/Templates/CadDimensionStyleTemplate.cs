@@ -22,11 +22,15 @@ namespace ACadSharp.IO.Templates
 
 		public ulong Dimltex2 { get; set; }
 
-		public ulong Dimltype { get; set; }
+		public ulong? Dimltype { get; set; }
 
 		public string TextStyle_Name { get; set; }
 
 		public ulong? TextStyleHandle { get; set; }
+
+		public ulong? BlockHandle { get; set; }
+
+		public bool DxfFlagsAssigned { get; set; } = false;
 
 		public CadDimensionStyleTemplate() : base(new DimensionStyle())
 		{
@@ -36,9 +40,9 @@ namespace ACadSharp.IO.Templates
 		{
 		}
 
-		public override void Build(CadDocumentBuilder builder)
+		protected override void build(CadDocumentBuilder builder)
 		{
-			base.Build(builder);
+			base.build(builder);
 
 			if (this.getTableReference(builder, this.TextStyleHandle, TextStyle_Name, out TextStyle style))
 			{
@@ -60,9 +64,14 @@ namespace ACadSharp.IO.Templates
 				this.CadObject.LineTypeExt2 = linetTypeEx2;
 			}
 
-			if (this.getTableReference(builder, this.DIMLDRBLK, this.DIMBL_Name, out BlockRecord leaderArrow))
+			if (this.getTableReference(builder, this.DIMLDRBLK, null, out BlockRecord leaderArrow))
 			{
 				this.CadObject.LeaderArrow = leaderArrow;
+			}
+
+			if (this.getTableReference(builder, this.DIMBLK, this.DIMBL_Name, out BlockRecord arrowBlock))
+			{
+				this.CadObject.ArrowBlock = arrowBlock;
 			}
 
 			if (this.getTableReference(builder, this.DIMBLK1, this.DIMBLK1_Name, out BlockRecord dimArrow1))
@@ -73,6 +82,10 @@ namespace ACadSharp.IO.Templates
 			if (this.getTableReference(builder, this.DIMBLK2, this.DIMBLK2_Name, out BlockRecord dimArrow2))
 			{
 				this.CadObject.DimArrow2 = dimArrow2;
+			}
+
+			if (this.getTableReference(builder, this.BlockHandle, null, out BlockRecord external))
+			{
 			}
 		}
 	}
